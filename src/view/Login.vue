@@ -6,6 +6,50 @@ export default {
       pw: "",
 
       focusBtn: false,
+      active__id: false,
+      error_id: false,
+      active__pw: false,
+      error_pw: false,
+    }
+  },
+  methods: {
+    label_event_id() {
+      this.active__id = true;
+    },
+    id_error_check() {
+      // 이메일 형식 검사
+      const validateEmail = /^[A-Za-z0-9_\\.\\-]+@[A-Za-z0-9\\-]+\.[A-Za-z0-9\\-]+/
+      // test() - 문자열이 정규 표현식을 만족하는지 판별한다
+      if (!validateEmail.test(this.id) || !this.id) {
+        this.error_id = true;
+        return
+      } else {
+        this.error_id = false
+      }
+    },
+    pw_error_check() {
+      // 비밀번호 형식 검사(영문, 숫자, 특수문자)
+      const validatePassword = /^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+]).{8,16}$/
+
+      if (!validatePassword.test(this.pw) || !this.pw) {
+        this.error_pw = true;
+        return
+      } else {
+        this.error_pw = false
+      }
+    },
+    label_event_pw() {
+      this.active__pw = true;
+    },
+    documentClick(e){
+      let el = this.$refs.document
+      let target = e.target
+      if (( el !== target) && !el.contains(target) && this.id == "") {
+        this.active__id = false;
+      }
+      if(( el !== target) && !el.contains(target) && this.pw == "") {
+        this.active__pw = false;
+      }
     }
   },
   computed: {
@@ -18,27 +62,44 @@ export default {
     }
   },
   watch: {
+    // computed는 함수명이랑 같게 입력하고, data부분은 '' -> 문자열로 하여 함수를 만들어야 해야 동작하는거 같다
     id_check() {
       
+    },
+    'id': function() {
+      this.id_error_check()
+    },
+    'pw': function() {
+      this.pw_error_check()
     }
+  },
+  created () {
+    document.addEventListener('click', this.documentClick)
+  },
+  destroyed () {
+    document.removeEventListener('click', this.documentClick)
   }
 }
 </script>
 
 
 <template>
-  <div class="login">
+  <div class="login" ref="document">
     <div class="inner">
       <div class="hd__login">
         <div class="__loginBox">
           <div class="__loginInner">
             <div class="__title">Instagram</div>
             <div class="__loginInfo">
-              <div class="__id">
-                <input type="text" v-model="id" placeholder="전화번호, 사용자 이름 또는 이메일" />
+              <div class="__id" @click="label_event_id($event)">
+                <label :class="{ active__id }" for="id" class="id__label">전화번호, 사용자 이름 또는 이메일</label>
+                <input type="text" id="id" v-model="id" />
+                <p v-show="error_id" class="error__id">이메일 주소를 정확히 입력해주세요</p>
               </div>
-              <div class="__pw">
-                <input type="password" v-model="pw" placeholder="비밀번호" />
+              <div class="__pw" @click="label_event_pw($event)">
+                <label :class="{ active__pw }" for="pw" class="pw__label">비밀번호</label>
+                <input type="password" id="pw" v-model="pw" />
+                <p v-show="error_pw" class="error__pw">비밀번호를 정확히 입력해주세요</p>
               </div>
             </div>
             <div class="__loginBtn">
@@ -57,7 +118,7 @@ export default {
         </div>
       </div>
       <div class="ft__regster">
-        <div class="__text">계정이 없으신가요? <span>가입하기</span></div>
+        <div class="__text">계정이 없으신가요? <RouterLink to="/regster">가입하기</RouterLink></div>
       </div>
     </div>
   </div>
@@ -75,7 +136,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     .inner {
-      max-width: 400px;
+      max-width: 350px;
       height: 100%;
       width: 100%; 
       margin: auto;
@@ -97,7 +158,7 @@ export default {
           margin: auto;
           width: 90%;
           .__loginInner {
-            width: 75%;
+            width: 85%;
             margin: auto;
             .__title {
               font-family: 'Lobster', cursive;
@@ -109,30 +170,76 @@ export default {
               padding-top: 4rem;
               margin: auto;
               .__id {
+                position: relative;
+                width: 100%;
+                height: 100%;
                 input {
                   font-size: 12px;
                   background-color: rgb(250, 250, 250);
                   outline: none;
                   border: 1px solid #eee;
                   width: 100%;
-                  height: 35px;
-                  padding: 10px;
+                  height: 38px;
+                  padding-top: 8px;
+                  padding-left: 5px;
                   box-sizing: border-box;
                   border-radius: 5px;
+                }
+                .id__label {
+                  position: absolute;
+                  display: flex;
+                  align-items: center;
+                  padding: 10px;
+                  font-size: 12px;
+                  transition: .3s;
+                  cursor: text;
+                }
+                .id__label.active__id {
+                  padding: 5px;
+                  font-size: 10px;
+                  transition: .3s;
+                }
+                .error__id {
+                  color: red;
+                  padding: 5px;
+                  font-size: 12px;
                 }
               }
               .__pw {
                 margin-top: .5rem;
+                position: relative;
+                width: 100%;
+                height: 100%;
                 input {
                   font-size: 12px;
-                  padding: 10px;
+                  padding-top: 8px;
+                  padding-left: 5px;
                   background-color: rgb(250, 250, 250);
                   outline: none;
                   border: 1px solid #eee;
                   width: 100%;
-                  height: 35px;
+                  height: 38px;
                   box-sizing: border-box;
                   border-radius: 5px;
+                }
+                .pw__label {
+                  position: absolute;
+                  display: flex;
+                  align-items: center;
+                  padding: 10px;
+                  font-size: 12px;
+                  transition: .3s;
+                  cursor: text;
+                }
+                .pw__label.active__pw {
+                  padding: 5px;
+                  font-size: 10px;
+                  transition: .3s;
+                }
+                .error__pw {
+                  color: red;
+                  padding: 5px;
+                  font-size: 12px;
                 }
               }
             }
@@ -152,6 +259,9 @@ export default {
               button.focusBtn {
                 opacity: 1;
                 cursor: pointer;
+                &:active {
+                  box-shadow: inset -.3rem -.1rem 1.4rem  rgb(0, 100, 200), inset .3rem .4rem .8rem rgb(0, 149, 246); 
+                }
               }
             }
             .__of {
@@ -213,9 +323,10 @@ export default {
         border: 1px solid rgb(219, 219, 219);
         .__text {
           text-align: center;
-          span {
+          a {
             color: rgb(0, 149, 246);
             font-weight: bold;
+            text-decoration: none;
             cursor: pointer;
           }
         }

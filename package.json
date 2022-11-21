@@ -2,13 +2,18 @@
   "name": "local_instagram",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "server": "nodemon src/Backend/app.js",
     "preview": "vite preview"
   },
   "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.20",
+    "path": "^0.12.7",
     "sass": "^1.56.1",
     "vue": "^3.2.41",
     "vue-router": "^4.1.6",
