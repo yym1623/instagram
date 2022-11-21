@@ -40,7 +40,7 @@ export default {
     box-sizing: border-box;
     .__text {
       display: flex;
-      flex-wrap: wrap;
+      // flex-wrap: wrap;
       justify-content: center;
       font-size: 12px;
       margin-left: auto;
