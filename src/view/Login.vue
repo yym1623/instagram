@@ -1,4 +1,5 @@
 <script>
+import axios from 'axios';
 export default {
   data() {
     return {
@@ -10,9 +11,39 @@ export default {
       error_id: false,
       active__pw: false,
       error_pw: false,
+
+      singIn: true,
+
+      error_message: ""
     }
   },
   methods: {
+    async login() {
+      try {
+        if(this.focusBtn === true) {
+          this.singIn= false;
+          const res = await axios({
+            url: 'http://localhost:8000/login',
+            method: 'POST',
+            data: {
+              email: this.id,
+              pw: this.pw
+            }
+          }) 
+          console.log(res);
+          if(res.data.message) {
+            this.error_message = res.data.message;
+          } else {
+            this.error_message = "";
+          }
+          this.singIn = true;
+          // 로그인 성공 -> 메인페이지 이동
+          // this.$router.push('/')
+        }
+      } catch(e) {
+        console.log(e)
+      }
+    },
     label_event_id() {
       this.active__id = true;
     },
@@ -50,11 +81,27 @@ export default {
       if(( el !== target) && !el.contains(target) && this.pw == "") {
         this.active__pw = false;
       }
+    },
+    // 페이스북 로그인 연동 (https)
+    FBLoginBtn:function(){
+      window.FB.login(function(response) {
+        if (response.status === 'connected') {
+          window.FB.api('/me', 'get', {fields: 'name,email'}, function(r) {
+
+            const facebook_email = r.email;
+            const facebook_name = r.name;
+
+            console.log(facebook_email);
+            console.log(facebook_name);
+
+          })
+        }
+      }, {scope: 'public_profile,email'});
     }
   },
   computed: {
     id_check() {
-      if(this.id !== "" && this.pw !== "") {
+      if(this.id !== "" && this.error_id === false && this.pw !== "" && this.error_pw === false) {
         this.focusBtn = true;
       } else {
         this.focusBtn = false;
@@ -76,6 +123,17 @@ export default {
   created () {
     document.addEventListener('click', this.documentClick)
   },
+  mounted() {
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId      : '701019071171273', // 아까 기억하라던 내 앱 ID
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v11.0'
+      });
+      window.FB.AppEvents.logPageView();
+    };
+  },
   destroyed () {
     document.removeEventListener('click', this.documentClick)
   }
@@ -93,7 +151,7 @@ export default {
             <div class="__loginInfo">
               <div class="__id" @click="label_event_id($event)">
                 <label :class="{ active__id }" for="id" class="id__label">전화번호, 사용자 이름 또는 이메일</label>
-                <input type="text" id="id" v-model="id" />
+                <input type="text" id="id" v-model="id" @keydown.tab="label_event_pw($event)" />
                 <p v-show="error_id" class="error__id">이메일 주소를 정확히 입력해주세요</p>
               </div>
               <div class="__pw" @click="label_event_pw($event)">
@@ -103,7 +161,7 @@ export default {
               </div>
             </div>
             <div class="__loginBtn">
-              <button :class="{ focusBtn }">로그인</button>
+              <button :class="{ focusBtn }" @click="login()">로그인</button>
             </div>
             <div class="__of">
               <div class="__left"></div>
@@ -111,7 +169,8 @@ export default {
               <div class="__right"></div>
             </div>
             <div class="__etcBox ">
-              <div class="__facebookLogin"><span><i class="fa-brands fa-square-facebook"></i></span>Facebook으로 로그인</div>
+              <div class="__facebookLogin" @click="FBLoginBtn()"><span><i class="fa-brands fa-square-facebook"></i></span>Facebook으로 로그인</div>
+              <div class="__errorMessage">{{ error_message }}</div>
               <div class="__errorPw">비밀번호를 잊으셨나요?</div>
             </div>
           </div>
@@ -299,6 +358,11 @@ export default {
                     font-size: 18px;
                   }
                 }
+              }
+              .__errorMessage {
+                color: red;
+                font-size: 15px;
+                margin-top: 1.5rem;
               }
               .__errorPw {
                 cursor: pointer;

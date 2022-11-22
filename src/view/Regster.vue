@@ -1,4 +1,5 @@
 <script>
+import axios from 'axios';
 export default {
   data() {
     return {
@@ -6,6 +7,8 @@ export default {
       name: "",
       nickname: "",
       pw: "",
+
+      error_email: "이메일 주소를 정확히 입력해주세요",
 
       focusBtn: false,
       active__id: false,
@@ -16,9 +19,40 @@ export default {
       error_nickname: false,
       active__pw: false,
       error_pw: false,
+
+      singUp: true,
     }
   },
   methods: {
+    async regster() {
+      try {
+        if(this.focusBtn === true) {
+          this.singUp = false;
+          const res = await axios({
+            url: 'http://localhost:8000/regster',
+            method: 'POST',
+            data: {
+              email: this.id,
+              pw: this.pw,
+              name: this.name,
+              nickname: this.nickname
+            }
+          })
+          console.log(res);
+          if(res.data.message) {
+            this.error_email = res.data.message;
+            this.error_id = true;
+          } else {
+            // 회원가입성공 -> 로그인페이지로 이동
+            this.$router.push('/')
+          }
+          this.singUp = true;
+
+        }
+      } catch(e) {
+        console.log(e)
+      }
+    },
     // id
     label_event_id() {
       this.active__id = true;
@@ -94,11 +128,27 @@ export default {
       if(( el !== target) && !el.contains(target) && this.pw == "") {
         this.active__pw = false;
       }
+    },
+    // 페이스북 로그인 연동 (https)
+    FBLoginBtn:function(){
+      window.FB.login(function(response) {
+        if (response.status === 'connected') {
+          window.FB.api('/me', 'get', {fields: 'name,email'}, function(r) {
+
+            const facebook_email = r.email;
+            const facebook_name = r.name;
+
+            console.log(facebook_email);
+            console.log(facebook_name);
+
+          })
+        }
+      }, {scope: 'public_profile,email'});
     }
   },
   computed: {
     id_check() {
-      if(this.id !== "" && this.pw !== "") {
+      if(this.error_id === false && this.id !== "" && this.error_name === false && this.name !== "" && this.error_nickname === false && this.nickname !== "" && this.error_pw === false && this.pw !== "" ) {
         this.focusBtn = true;
       } else {
         this.focusBtn = false;
@@ -108,7 +158,7 @@ export default {
   watch: {
     // computed는 함수명이랑 같게 입력하고, data부분은 '' -> 문자열로 하여 함수를 만들어야 해야 동작하는거 같다
     id_check() {
-      
+
     },
     'id': function() {
       this.id_error_check()
@@ -126,6 +176,17 @@ export default {
   created () {
     document.addEventListener('click', this.documentClick)
   },
+  mounted() {
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId      : '701019071171273', // 아까 기억하라던 내 앱 ID
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v11.0'
+      });
+      window.FB.AppEvents.logPageView();
+    };
+  },
   destroyed () {
     document.removeEventListener('click', this.documentClick)
   }
@@ -142,7 +203,7 @@ export default {
             <div class="__title">Instagram</div>
             <div class="__mainContent">친구들과 사진과 동영상을 보려면 가입하세요</div>
             <div class="__etcBox ">
-              <button class="__facebookLogin"><span><i class="fa-brands fa-square-facebook"></i></span>Facebook으로 로그인</button>
+              <button class="__facebookLogin" @click="FBLoginBtn()"><span><i class="fa-brands fa-square-facebook"></i></span>Facebook으로 로그인</button>
             </div>
             <div class="__of">
               <div class="__left"></div>
@@ -153,30 +214,33 @@ export default {
               <!-- id -->
               <div class="__id" @click="label_event_id($event)">
                 <label :class="{ active__id }" for="id" class="id__label">전화번호, 사용자 이름 또는 이메일</label>
-                <input type="text" id="id" v-model="id" />
-                <p v-show="error_id" class="error__id">이메일 주소를 정확히 입력해주세요</p>
+                <input type="text" id="id" v-model="id"  @keydown.tab="label_event_name()" />
+                <p v-show="error_id" class="error__id">{{ error_email }}</p>
               </div>
               <!-- name -->
               <div class="__name" @click="label_event_name($event)">
                 <label :class="{ active__name }" for="name" class="name__label">성명</label>
-                <input type="text" id="name" v-model="name" />
+                <input type="text" id="name" v-model="name"  @keydown.tab="label_event_nickname()" />
                 <p v-show="error_name" class="error__name">성명을 정확히 입력해주세요</p>
               </div>
               <!-- nickname -->
               <div class="__nickname" @click="label_event_nickname($event)">
                 <label :class="{ active__nickname }" for="nickname" class="nickname__label">사용자 이름</label>
-                <input type="text" id="nickname" v-model="nickname" />
+                <input type="text" id="nickname" v-model="nickname"  @keydown.tab="label_event_pw()" />
                 <p v-show="error_nickname" class="error__nickname">사용자 이름을 정확히 입력해주세요</p>
               </div>
               <!-- pw -->
               <div class="__pw" @click="label_event_pw($event)">
                 <label :class="{ active__pw }" for="pw" class="pw__label">비밀번호</label>
-                <input type="password" id="pw" v-model="pw" />
+                <input type="password" id="pw" v-model="pw" @keydown.enter="regster()" />
                 <p v-show="error_pw" class="error__pw">비밀번호를 정확히 입력해주세요</p>
               </div>
             </div>
             <div class="__regsterBtn">
-              <button :class="{ focusBtn }">가입</button>
+              <button :class="{ focusBtn }" @click="regster()" v-if="singUp">가입</button>
+              <div class="__lodingBox" v-else>
+                <img class="__loding" src="https://subarucustomersupport.powerappsportals.com/blue-spinner.gif" />
+              </div>
             </div>
           </div>
         </div>
@@ -461,6 +525,21 @@ export default {
                 &:active {
                   box-shadow: inset -.3rem -.1rem 1.4rem  rgb(0, 100, 200), inset .3rem .4rem .8rem rgb(0, 149, 246); 
                 }
+              }
+              .__lodingBox {
+                width: 100%;
+                height: 30px;
+                background: rgb(0, 149, 246);
+                border: 1px solid transparent;
+                border-radius: 5px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .__loding {
+                  width: 20px;
+                  height: 20px;
+                }
+
               }
             }
           }
