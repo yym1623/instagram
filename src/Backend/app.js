@@ -3,6 +3,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors';
+import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -13,9 +14,11 @@ const app = express();
 
 const port = process.env.PORT || 8000;
 
+// 미들웨어
 // cors
 app.use(cors());
 
+// bodyParser? - POST 방식 전송을 위해서 필요함
 app.use(bodyParser.json());
 
 // Parse requests of content-type: application/x-www-form-urlencoded
@@ -23,26 +26,33 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 // express session
-import session from 'express-session';                      
-import MySQLStore from 'express-mysql-session';
-MySQLStore(session);
+import session from 'express-session';
+// express session -> save store
+import MySQLStore from 'express-mysql-session' 
+MySQLStore(session)
 
 const options ={                                                 
-	host: process.env.DB_TARGET,
-	port: process.env.DB_PORT,
+	host: process.env.DB_HOST,
 	user: process.env.DB_USER,
 	password: process.env.DB_PW,
 	database: process.env.DB_NAME
 };
+
 const sessionStore = new MySQLStore(options);                    
 
-app.use(session({
-  secret:"asdfasffdas",
-  resave:false,
-  saveUninitialized:true,
-  store: sessionStore
-}))
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
+app.use(session({
+	secret: process.env.COOKIE_SECRET,
+	resave: false,
+	saveUninitialized: true,
+	cookie: {
+    httpOnly: true,
+    Secure: true
+  },
+  name: 'session-cookie',
+	store: sessionStore
+}));
 
 
 
@@ -53,10 +63,10 @@ app.get('/', function(req, res){
 })
 
 // db query
-db.connect();
-// select
+// db.connect();
+
+// 조회
 app.get('/users',(req, res) => {
-	console.log(req.body)
 	db.query('SELECT * FROM user', (err, results) => {
 		if(err) throw err;
 		res.send(results)
@@ -68,11 +78,18 @@ app.get('/users',(req, res) => {
 
 // 로그인
 app.post('/login', (req, res) => {
+	//  	// 세션이 없다면
+	//   if(req.body.num === undefined) {
+	// 	  // 세션 등록
+	// 		req.session.num = 1;
+	// 	} else {
+	// 		// 세션 추가
+	// 		req.session.num += 1;
+	// 	}
 	const userInfo = {
 		'email': req.body.email,
 		'pw': req.body.pw
 	}
-
 	// 조건으로 하나만 가져올 경우엔 하나니깐 바로 두번째인자인 row로 접근하는게 아닌 row[0] 으로 접근 가능하단
 	const sql = `SELECT * FROM user WHERE email = '${userInfo.email}'` 
 
@@ -88,18 +105,22 @@ app.post('/login', (req, res) => {
 						if(err) {
 							console.error(err);
 						} else {
-							res.send(row)
-							// session에 저장
-							console.log(req.session)
+							// res 2번 사용하니 오류걸림 send지우고 아래 session을 통한 redirect()를 사용함으로 오류가 사라졌단
+							// 세션추가
 							req.session.email = row[0].email;
 							req.session.name = row[0].name;
 							req.session.nickname = row[0].nickname;
-							req.session.isLogined = true;
 
-							//세션 스토어가 이루어진 후 redirect를 해야함 - 안하면 버그걸림
-							// req.session.save(function() {
-							// 	req.redirect('/');
-							// });
+							//세션 스토어가 이루어진 후 redirect를 해야함 - 안하면 버그걸림 (서버 데이터 저장후 새로고침해야 적용되는거랑 비슷한 원리같다)
+							// 클라로 응답보낼땐 send(), json() 두가지 방법이 있단
+							// res 두번요청하면 에러가 걸리므로 일단 세션저장후 리다이렉션은 멈춰보고 문제생길지 변경한단 -> 현재로썬 클라에서하는거라 노드에서 리다이렉션이 필요없게 느껴짐 (노드에서 리다이렉션을 안하여 세션에 문제가 가할경우에 변경하겠다 -> 안해도 디비데이터는 잘날려서 일단 멈춘단)
+							req.session.save(err => {
+								if (err) console.error(err);
+								res.send({ row, session : req.session })
+								// 로그인 성공 후 세션저장되면 home으로 이동(메인페이지), 아니면 '/'로 이동해서 app.vue에서 해당 세션값있으면 home으로 가게 설정도 가능
+								// 같은 백쪽 경로이동만 되는거같다
+								// res.redirect('/');
+							});
 							// 세션삭제
 							// req.session.destory(function(err){});
 						}

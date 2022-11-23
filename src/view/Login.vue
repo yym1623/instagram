@@ -35,6 +35,13 @@ export default {
             this.error_message = res.data.message;
           } else {
             this.error_message = "";
+            // 클라 -> 쿠키에 데이터 저장(중복저장 불가능)
+            // 하루마다 쿠키값 삭제후 -> 서버에 요청할떄 클라 쿠키값이 있다면 -> 그 쿠키값으로 세션값 가져오고, 쿠키값이 삭제되었다면 서버에서 세션재생성하여 보내준다 -> 그걸 클라에 쿠키로 저장한다
+            this.$cookies.set('email', res.data.session.email);
+            this.$cookies.set('name', res.data.session.name);
+            this.$cookies.set('nickname', res.data.session.nickname);
+            this.$cookies.config("7d");
+            this.$router.push('/');
           }
           this.singIn = true;
           // 로그인 성공 -> 메인페이지 이동
@@ -156,7 +163,7 @@ export default {
               </div>
               <div class="__pw" @click="label_event_pw($event)">
                 <label :class="{ active__pw }" for="pw" class="pw__label">비밀번호</label>
-                <input type="password" id="pw" v-model="pw" />
+                <input type="password" id="pw" v-model="pw" @keydown.enter="login()" />
                 <p v-show="error_pw" class="error__pw">비밀번호를 정확히 입력해주세요</p>
               </div>
             </div>

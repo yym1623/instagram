@@ -15,13 +15,13 @@ export default createRouter({
   routes: [
     {
       path: '/',
-      name: "Login",
-      component: Login
-    },
-    {
-      path: '/home',
       name: "Home",
       component: Home
+    },
+    {
+      path: '/login',
+      name: "Login",
+      component: Login
     },
     {
       path: '/regster',
