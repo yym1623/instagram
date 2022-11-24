@@ -193,215 +193,226 @@ export default {
 
 <style lang="scss" scoped>
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
-  .login {
-    max-width: 460px;
-    width: 100%;
-    height: 85vh;
+.login {
+  max-width: 460px;
+  width: 100%;
+  height: 85vh;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  .inner {
+    max-width: 350px;
+    height: 100%;
+    width: 100%; 
     margin: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    .inner {
-      max-width: 350px;
-      height: 100%;
-      width: 100%; 
-      margin: auto;
+    .hd__login {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      .hd__login {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        width: 100%;
-        padding-top: 2em;
-        // box-sizing: border-box를 안해주면 padding만큼 늘어난단
-        // 고정(px)으로 줄거와 동적(em, rem)줄걸 명확히 구분해서 적어란
-        box-sizing: border-box;
-        border: 1px solid rgb(219, 219, 219);
-        background: #fff;
-        .__loginBox {
+      width: 100%;
+      padding-top: 2em;
+      // box-sizing: border-box를 안해주면 padding만큼 늘어난단
+      // 고정(px)으로 줄거와 동적(em, rem)줄걸 명확히 구분해서 적어란
+      box-sizing: border-box;
+      border: 1px solid rgb(219, 219, 219);
+      background: #fff;
+      .__loginBox {
+        margin: auto;
+        width: 90%;
+        .__loginInner {
+          width: 85%;
           margin: auto;
-          width: 90%;
-          .__loginInner {
-            width: 85%;
+          .__title {
+            font-family: 'Lobster', cursive;
+            font-size: 3rem;
+            text-align: center;
+            cursor: pointer;
+          }
+          .__loginInfo {
+            padding-top: 4rem;
             margin: auto;
-            .__title {
-              font-family: 'Lobster', cursive;
-              font-size: 3rem;
-              text-align: center;
-              cursor: pointer;
-            }
-            .__loginInfo {
-              padding-top: 4rem;
-              margin: auto;
-              .__id {
-                position: relative;
+            .__id {
+              position: relative;
+              width: 100%;
+              height: 100%;
+              input {
+                font-size: 12px;
+                background-color: rgb(250, 250, 250);
+                outline: none;
+                border: 1px solid #eee;
                 width: 100%;
-                height: 100%;
-                input {
-                  font-size: 12px;
-                  background-color: rgb(250, 250, 250);
-                  outline: none;
-                  border: 1px solid #eee;
-                  width: 100%;
-                  height: 38px;
-                  padding-top: 8px;
-                  padding-left: 5px;
-                  box-sizing: border-box;
-                  border-radius: 5px;
-                }
-                .id__label {
-                  position: absolute;
-                  display: flex;
-                  align-items: center;
-                  padding: 10px;
-                  font-size: 12px;
-                  transition: .3s;
-                  cursor: text;
-                }
-                .id__label.active__id {
-                  padding: 5px;
-                  font-size: 10px;
-                  transition: .3s;
-                }
-                .error__id {
-                  color: red;
-                  padding: 5px;
-                  font-size: 12px;
-                }
-              }
-              .__pw {
-                margin-top: .5rem;
-                position: relative;
-                width: 100%;
-                height: 100%;
-                input {
-                  font-size: 12px;
-                  padding-top: 8px;
-                  padding-left: 5px;
-                  background-color: rgb(250, 250, 250);
-                  outline: none;
-                  border: 1px solid #eee;
-                  width: 100%;
-                  height: 38px;
-                  box-sizing: border-box;
-                  border-radius: 5px;
-                }
-                .pw__label {
-                  position: absolute;
-                  display: flex;
-                  align-items: center;
-                  padding: 10px;
-                  font-size: 12px;
-                  transition: .3s;
-                  cursor: text;
-                }
-                .pw__label.active__pw {
-                  padding: 5px;
-                  font-size: 10px;
-                  transition: .3s;
-                }
-                .error__pw {
-                  color: red;
-                  padding: 5px;
-                  font-size: 12px;
-                }
-              }
-            }
-            .__loginBtn {
-              margin: 1rem auto auto auto;
-              button {
-                width: 100%;
-                height: 30px;
-                font-size: 15px;
-                color: #fff;
-                font-weight: bold;
-                background: rgb(0, 149, 246);
-                border: 1px solid transparent;
+                height: 38px;
+                padding-top: 8px;
+                padding-left: 5px;
+                box-sizing: border-box;
                 border-radius: 5px;
-                opacity: .5;
               }
-              button.focusBtn {
-                opacity: 1;
-                cursor: pointer;
-                &:active {
-                  box-shadow: inset -.3rem -.1rem 1.4rem  rgb(0, 100, 200), inset .3rem .4rem .8rem rgb(0, 149, 246); 
-                }
+              .id__label {
+                position: absolute;
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                font-size: 12px;
+                transition: .3s;
+                cursor: text;
               }
-            }
-            .__of {
-              margin: 2rem auto auto auto;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              .__left,
-              .__right {
-                height: 1px;
-                background: #eee;
-                width: 40%;
+              .id__label.active__id {
+                padding: 5px;
+                font-size: 10px;
+                transition: .3s;
               }
-              .__content {
-                color: rgb(142, 142, 142);
-                font-size: 13px;
-                font-weight: bold;
-              }
-              .__left {
-                margin-right: auto;
-              }
-              .__right {
-                margin-left: auto;
-              }
-            }
-            .__etcBox {
-              margin: 2rem auto auto auto;
-              text-align: center;
-              .__facebookLogin {
-                cursor: pointer;
-                color: #385185;
-                span {
-                  margin-right: .5rem;
-                  i {
-                    font-size: 18px;
-                  }
-                }
-              }
-              .__errorMessage {
+              .error__id {
                 color: red;
-                font-size: 15px;
-                margin-top: 1.5rem;
+                padding: 5px;
+                font-size: 12px;
               }
-              .__errorPw {
-                cursor: pointer;
-                margin-top: 1.5rem;
-                padding-bottom: 1.5rem;
-                font-size: 13px;
-                color: rgb(0, 55, 107);
+            }
+            .__pw {
+              margin-top: .5rem;
+              position: relative;
+              width: 100%;
+              height: 100%;
+              input {
+                font-size: 12px;
+                padding-top: 8px;
+                padding-left: 5px;
+                background-color: rgb(250, 250, 250);
+                outline: none;
+                border: 1px solid #eee;
+                width: 100%;
+                height: 38px;
+                box-sizing: border-box;
+                border-radius: 5px;
+              }
+              .pw__label {
+                position: absolute;
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                font-size: 12px;
+                transition: .3s;
+                cursor: text;
+              }
+              .pw__label.active__pw {
+                padding: 5px;
+                font-size: 10px;
+                transition: .3s;
+              }
+              .error__pw {
+                color: red;
+                padding: 5px;
+                font-size: 12px;
               }
             }
           }
-        }
-      }
-      .ft__regster {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        width: 100%;
-        height: 8%;
-        margin-top: 1rem;
-        box-sizing: border-box;
-        background: #fff;
-        border: 1px solid rgb(219, 219, 219);
-        .__text {
-          text-align: center;
-          a {
-            color: rgb(0, 149, 246);
-            font-weight: bold;
-            text-decoration: none;
-            cursor: pointer;
+          .__loginBtn {
+            margin: 1rem auto auto auto;
+            button {
+              width: 100%;
+              height: 30px;
+              font-size: 15px;
+              color: #fff;
+              font-weight: bold;
+              background: rgb(0, 149, 246);
+              border: 1px solid transparent;
+              border-radius: 5px;
+              opacity: .5;
+            }
+            button.focusBtn {
+              opacity: 1;
+              cursor: pointer;
+              &:active {
+                box-shadow: inset -.3rem -.1rem 1.4rem  rgb(0, 100, 200), inset .3rem .4rem .8rem rgb(0, 149, 246); 
+              }
+            }
+          }
+          .__of {
+            margin: 2rem auto auto auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            .__left,
+            .__right {
+              height: 1px;
+              background: #eee;
+              width: 40%;
+            }
+            .__content {
+              color: rgb(142, 142, 142);
+              font-size: 13px;
+              font-weight: bold;
+            }
+            .__left {
+              margin-right: auto;
+            }
+            .__right {
+              margin-left: auto;
+            }
+          }
+          .__etcBox {
+            margin: 2rem auto auto auto;
+            text-align: center;
+            .__facebookLogin {
+              cursor: pointer;
+              color: #385185;
+              span {
+                margin-right: .5rem;
+                i {
+                  font-size: 18px;
+                }
+              }
+            }
+            .__errorMessage {
+              color: red;
+              font-size: 15px;
+              margin-top: 1.5rem;
+            }
+            .__errorPw {
+              cursor: pointer;
+              margin-top: 1.5rem;
+              padding-bottom: 1.5rem;
+              font-size: 13px;
+              color: rgb(0, 55, 107);
+            }
           }
         }
       }
     }
+    .ft__regster {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+      height: 8%;
+      margin-top: 1rem;
+      box-sizing: border-box;
+      background: #fff;
+      border: 1px solid rgb(219, 219, 219);
+      .__text {
+        text-align: center;
+        a {
+          color: rgb(0, 149, 246);
+          font-weight: bold;
+          text-decoration: none;
+          cursor: pointer;
+        }
+      }
+    }
   }
+}
+
+
+// tablet
+@media screen and (max-width: 1200px) {
+
+}
+
+// mobile
+@media screen and (max-width: 760px) {
+
+}
 </style>
