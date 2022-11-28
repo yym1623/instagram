@@ -246,7 +246,7 @@ export default {
         </div>
       </div>
       <div class="ft__regster">
-        <div class="__text">계정이 있으신가요? <RouterLink to="/">로그인</RouterLink></div>
+        <div class="__text">계정이 있으신가요? <RouterLink to="/login">로그인</RouterLink></div>
       </div>
     </div>
   </div>

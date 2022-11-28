@@ -1,14 +1,29 @@
 <script>
+import Swipers, { Navigation, Pagination, Scrollbar } from 'swiper'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+
+
 export default {
+  components: {
+    Swiper,
+    SwiperSlide,
+  },
+  // setup() -> 처음 접속시의 라이프사이클인 mounted()같은거인거 같다
+  setup() {
+    return {
+      modules: [ Navigation, Pagination, Scrollbar ],
+    }
+  },
   data() {
     return {
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
     }
   },
-  mounted() {
-
-  }
 }
 </script>
 
@@ -18,8 +33,83 @@ export default {
     <div class="menu">
       <div class="section">
         <div class="left__list">
-          <div class="__store"></div>
-          <div class="__board"></div>
+          <!-- 스토리 -->
+          <div class="__store">
+            <swiper class="swiper swiper-container" :slides-per-view="6" :space-between="20" :modules="modules" navigation>
+              <div class="swiper-wrapper">
+                <!-- test item -> 7(swiper test를 위해 swiper per view보다 하나 더 추가) -->
+                <swiper-slide class="swiper__item">
+                  <div class="__img">1</div>
+                  <div class="__nickname">{{ nickname }}</div>
+                </swiper-slide>
+                <swiper-slide class="swiper__item">
+                  <div class="__img">2</div>
+                  <div class="__nickname">{{ nickname }}</div>
+                </swiper-slide>
+                <swiper-slide class="swiper__item">
+                  <div class="__img">3</div>
+                  <div class="__nickname">{{ nickname }}</div>
+                </swiper-slide>
+                <swiper-slide class="swiper__item">
+                  <div class="__img">4</div>
+                  <div class="__nickname">{{ nickname }}</div>
+                </swiper-slide>
+                <swiper-slide class="swiper__item">
+                  <div class="__img">5</div>
+                  <div class="__nickname">{{ nickname }}</div>
+                </swiper-slide>
+                <swiper-slide class="swiper__item">
+                  <div class="__img">6</div>
+                  <div class="__nickname">{{ nickname }}</div>
+                </swiper-slide>
+                <swiper-slide class="swiper__item">
+                  <div class="__img">7</div>
+                  <div class="__nickname">{{ nickname }}</div>
+                </swiper-slide>
+              </div>
+            </swiper>
+          </div>
+          <!-- 게시글 -->
+          <div class="__board">
+            <div class="board__title">
+              <div class="__myInfo">
+              <div class="__infoBox">
+                <div class="__myImg"></div>
+                <div class="__myData">
+                  <div class="__nickname">{{ nickname }}</div>
+                  <div class="__name">{{ name }}</div>
+                </div>
+              </div>
+              <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+            </div>
+            <div class="board__body">
+              <img class="body__img" src="" alt=""  onerror="this.src='/public/roding.png'">
+            </div>
+            <div class="board__content">
+              <div class="content__comu">
+                <div class="__icons __heart"><i class="fa-regular fa-heart"></i></div>
+                <div class="__icons __comment"><i class="fa-regular fa-comment"></i></div>
+                <div class="__icons __message"><i class="fa-regular fa-paper-plane"></i></div>
+                <div class="__icons __save"><i class="fa-regular fa-bookmark"></i></div>
+              </div>
+              <div class="comment__heart">
+                <div class="heart__img"></div>
+                <div class="heart__text">test님이 좋아합니다</div>
+              </div>
+              <div class="comment__info">
+                <div class="info__title">{{ nickname }}</div>
+              </div>
+              <div class="comment__date">
+                <div class="date__title">1일 전</div>
+              </div>
+              <div class="comment__text">
+                <div class="__icon"><i class="fa-regular fa-face-smile"></i></div>
+                <div class="__text"><input type="text" placeholder="댓글 달기..." /></div>
+                <div class="__uploadBtn">게시</div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="right__list">
           <div class="__myInfo">
@@ -38,6 +128,39 @@ export default {
               <div class="__search">모두보기</div>
             </div>
             <div class="__sugList">
+              <!-- 5개 테스트 -->
+              <div class="__item">
+                <div class="__myImg"></div>
+                <div class="__myData">
+                  <div class="__nickname">nickname(test)</div>
+                  <div class="__name">name(test)</div>
+                </div>
+                <div class="__transform">팔로우</div>
+              </div>
+              <div class="__item">
+                <div class="__myImg"></div>
+                <div class="__myData">
+                  <div class="__nickname">nickname(test)</div>
+                  <div class="__name">name(test)</div>
+                </div>
+                <div class="__transform">팔로우</div>
+              </div>
+              <div class="__item">
+                <div class="__myImg"></div>
+                <div class="__myData">
+                  <div class="__nickname">nickname(test)</div>
+                  <div class="__name">name(test)</div>
+                </div>
+                <div class="__transform">팔로우</div>
+              </div>
+              <div class="__item">
+                <div class="__myImg"></div>
+                <div class="__myData">
+                  <div class="__nickname">nickname(test)</div>
+                  <div class="__name">name(test)</div>
+                </div>
+                <div class="__transform">팔로우</div>
+              </div>
               <div class="__item">
                 <div class="__myImg"></div>
                 <div class="__myData">
@@ -62,7 +185,8 @@ export default {
 </template>
 
 
-<style lang="scss" scoped>
+<!-- scoped를 걸면 라이브러리에 있는 css 커마변경이 안된단 -> scoped를 풀면 가능하다 -->
+<style lang="scss">
 
 .home {
   width: calc(100% - 335px);
@@ -88,18 +212,186 @@ export default {
           border-radius: 8px;
           margin-bottom: 0;
           margin-top: 16px;
-          padding: 16px 0;
+          padding: 15px;
           min-height: 80px;
           // box-sizing: border-box;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          .swiper {
+            .swiper__item {
+              cursor: pointer;
+              .__img {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #eee;
+                width: 56px;
+                height: 56px ;
+                border-radius: 50%;
+              }
+              .__nickname {
+                font-size: 12px;
+                color: #262626;
+                margin-top: 5px;
+                text-align: center;
+              }
+            }
+            // swiper navigation button costom
+            .swiper-button-prev,
+            .swiper-button-next {
+              border-radius: 50%;
+              max-width: 30px;
+              max-height: 30px;
+              width: 100%;
+              height: 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background: #fff;
+              &::after {
+                font-size: 15px;
+                font-weight: bold;
+              }
+            }
+            .swiper-button-prev {
+              left: 0;
+            }
+            .swiper-button-next {
+              right: 0;
+            }
+            .swiper-button-prev.swiper-button-disabled {
+              display: none;
+            }
+            .swiper-button-next.swiper-button-disabled {
+              display: none;
+            }
+          }
         }
         .__board {
+          min-height: 530px;
+          max-height: 900px;
+          // height: 100%;
           border-radius: 8px;
           margin-top: 16px;
           margin-bottom: 12px;
           background: rgb(255,255,255);
           border: 1px solid rgb(219, 219, 219);
           box-sizing: border-box;
-          min-height: 880px;
+          .board__title {
+            max-height: 60px;
+            min-height: 55px;
+            // height: 100%;
+            border-bottom: 1px solid rgb(219, 219, 219);
+            .__myInfo {
+              padding: 13px;
+              display: flex;
+              align-items: center;
+              .__infoBox {
+                display: flex;
+                align-items: center;
+                .__myImg {
+                  background: #eee;
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 50%;
+                  cursor: pointer;
+                }
+                .__myData {
+                  margin-left: 15px;
+                  .__nickname {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: rgb(38, 38, 38);
+                  }
+                  .__name {
+                    margin-top: 5px;
+                    font-size: 12px;
+                    color: rgb(142, 142, 142);
+                  }
+                }
+              }
+              .__transform {
+                margin-left: auto;
+                margin-right: 12px;
+                font-size: 20px;
+                color: #000;
+                font-weight: bold;
+                cursor: pointer;
+              }
+            }
+          }
+          .board__body {
+            max-height: 590px;
+            min-height: 275px;
+            // height: 100%;
+            .body__img {
+              width: 100%;
+            }
+          }
+          .board__content {
+            border-top: 1px solid rgb(219, 219, 219);
+            max-height: 250px;
+            min-height: 200px;
+            // height: 100%;
+            // height: 100%;
+            .content__comu {
+              padding: 13px;
+              display: flex;
+              .__icons {
+                cursor: pointer;
+                i {
+                  font-size: 24px;
+                  // color, background-color론 icons안에 채울순없지만 font-weight : bold로 검은 백그라운드를 줄 수 있다
+                }
+                margin-left: 20px;
+                &:first-child {
+                  margin-left: 0;
+                }
+                &:last-child {
+                  margin-left: auto;
+                }
+                &:hover {
+                  opacity: .5;
+                }
+              }
+            }
+            .comment__heart {
+              padding: 10px 10px 10px 15px;
+              display: flex;
+              align-items: center;
+              .heart__img {
+                width: 24px;
+                height: 24px;
+                background: #eee;
+                border-radius: 50%; 
+              }
+              .heart__text {
+                margin-left: 10px;
+                font-size: 15px;
+              }
+            }
+            .comment__info {
+              padding: 5px 13px 5px 13px;
+              .info__title {
+                font-size: 14px;
+                font-weight: bold;
+              }
+            }
+            .comment__date {
+              padding: 13px;
+              .date__title {
+                font-size: 10px;
+                color: #828282
+              }
+            }
+            .comment__text {
+              padding: 4px 16px;
+              border-top: 1px solid rgb(219, 219, 219);
+              display: flex;
+              align-items: center;
+            }
+          }
         }
       }
       .right__list {
@@ -171,7 +463,7 @@ export default {
             .__item {
             display: flex;
             align-items: center;
-            padding: 16px 8px;
+            padding-top: 20px;
             .__myImg {
               background: #eee;
               width: 32px;
@@ -203,7 +495,7 @@ export default {
           }
         }
         .__footer {
-          margin-top: 16px;
+          margin-top: 30px;
           min-height: 110px;
           box-sizing: border-box;
           color: rgb(199,199,199);

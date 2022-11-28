@@ -41,6 +41,9 @@ export default {
             this.$cookies.set('name', res.data.session.name);
             this.$cookies.set('nickname', res.data.session.nickname);
             this.$cookies.config("7d");
+            setTimeout(() => {
+              this.$router.go();
+            },100)
             this.$router.push('/');
           }
           this.singIn = true;
