@@ -52,35 +52,35 @@ export default {
 <template>
   <div class="header">
     <div class="first__header" v-if="display <= 760">
-      <div class="__title">Instagram</div>
-      <div class="__icon">
+      <RouterLink to="/" class="__title">Instagram</RouterLink>
+      <RouterLink to="/message" class="__icon">
         <i class="fa-regular fa-paper-plane"></i>
-      </div>
+      </RouterLink>
     </div>
     <div class="second__header">
       <div class="menu">
-        <div class="__title">
+        <RouterLink to="/" class="__title">
           <span v-if="display > 1200">Instagram</span>
           <span v-else><i class="fa-brands fa-instagram"></i></span>
-        </div>
+        </RouterLink>
         <div class="__menuItem">
-          <div class="__item __home">
+          <RouterLink to="/" class="__item __home">
             <!-- icon hover -> 색변동 대기 -->
             <div class="__icon"><i class="fa-solid fa-house"></i></div>
             <div class="__text">홈</div>
-          </div>
+          </RouterLink>
           <div class="__item __search">
             <div class="__icon"><i class="fa-solid fa-magnifying-glass"></i></div>
             <div class="__text">검색</div>
           </div>
-          <div class="__item __quest">
+          <RouterLink to="/explore" class="__item __quest">
             <div class="__icon"><i class="fa-regular fa-compass"></i></div>
             <div class="__text">탐색 탭</div>
-          </div>
-          <div class="__item __message">
+          </RouterLink>
+          <RouterLink to="/message" class="__item __message">
             <div class="__icon"><i class="fa-regular fa-paper-plane"></i></div>
             <div class="__text">메세지</div>
-          </div>
+          </RouterLink>
           <div class="__item __notice">
             <div class="__icon">
               <i v-if="display <= 760" class="fa-regular fa-square-plus"></i>
@@ -112,6 +112,12 @@ export default {
 
 <style lang="scss" scoped>
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+* {
+  color: #000;
+  text-decoration: none;
+}
+
 .header {
   .second__header {
     position: fixed;

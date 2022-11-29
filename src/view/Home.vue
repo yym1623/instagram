@@ -84,7 +84,7 @@ export default {
             </div>
             </div>
             <div class="board__body">
-              <img class="body__img" src="" alt=""  onerror="this.src='/public/roding.png'">
+              <!-- <img class="body__img" src="" alt=""  onerror="this.src='/public/roding.png'"> -->
             </div>
             <div class="board__content">
               <div class="content__comu">
@@ -269,7 +269,7 @@ export default {
           }
         }
         .__board {
-          min-height: 530px;
+          // min-height: 530px;
           max-height: 900px;
           // height: 100%;
           border-radius: 8px;
@@ -332,7 +332,7 @@ export default {
           .board__content {
             border-top: 1px solid rgb(219, 219, 219);
             max-height: 250px;
-            min-height: 200px;
+            // min-height: 200px;
             // height: 100%;
             // height: 100%;
             .content__comu {
@@ -386,10 +386,27 @@ export default {
               }
             }
             .comment__text {
-              padding: 4px 16px;
+              padding: 8px 16px;
+              height: 100%;
               border-top: 1px solid rgb(219, 219, 219);
               display: flex;
               align-items: center;
+              .__icon {
+                // i icon은 직접 i에 안넣고 부모요소에 넣어도 적용된단
+                font-size: 24px;
+              }
+              .__text {
+                margin-left: 10px;
+                input {
+                  width: 350px;
+                  height: 30px;
+                  border: none;
+                  outline: none;
+                }
+              }
+              .__uploadBtn {
+                margin-left: auto;
+              }
             }
           }
         }
@@ -551,6 +568,14 @@ export default {
   .home {
     .menu {
       max-width: 470px;
+      // 게시판
+      .__board {
+        .board__content {
+          .comment__text {
+            display: none !important;
+          }
+        }
+      }
     }
     margin: auto;
   }
