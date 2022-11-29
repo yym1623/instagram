@@ -4,8 +4,24 @@ export default {
     return {
       display: 0,
 
+      user_display: false,
+
       tablet_display: false,
       mobile_display: false,
+
+      nickname: this.$cookies.get('nickname'),
+      name: this.$cookies.get('name'),
+    }
+  },
+  methods: {
+    // router -> 동적값 전달할땐 클릭이벤트로 한단 -> 아니면 요소자체에 RouterLink로
+    myPage(nickname) {
+      this.$router.push({
+        name: 'User',
+        params: {
+          id : nickname
+        }
+      })
     }
   },
   computed: {
@@ -25,11 +41,24 @@ export default {
         
       })
     },
+    userDisplay() {
+      if(this.$route.name === "User") {
+        this.user_display = true;
+      } else {
+        this.user_display = false;
+      }
+      console.log(this.user_display)
+      console.log(this.$route.name)
+    }
   },
   watch: {
     displaySize(e) {
       e = window.innerWidth;
     },
+    // 실시간 반응은 computed -> watch 조합이 편하단
+    userDisplay(e) {
+
+    }
   },
   mounted() {
     // display 크기에 따라 요소가 변해야 한다면 이렇게 window크기를 구해서 넣어줘도 되지만, css만 변경이라면 미디어 쿼리를 사용해도 무방하다
@@ -51,7 +80,13 @@ export default {
 
 <template>
   <div class="header">
-    <div class="first__header" v-if="display <= 760">
+    <div class="first__header" v-if="display <= 760 && user_display === true">
+      <div class="__title"><i class="fa-solid fa-gear"></i></div>
+      <div class="__icon">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
+    </div>
+    <div class="first__header" v-else-if="display <= 760">
       <RouterLink to="/" class="__title">Instagram</RouterLink>
       <RouterLink to="/message" class="__icon">
         <i class="fa-regular fa-paper-plane"></i>
@@ -95,7 +130,7 @@ export default {
             </div>
             <div class="__text">만들기</div>
           </div>
-          <div class="__item __myinfo">
+          <div class="__item __myinfo" @click="myPage(nickname)">
             <div class="__icon"><i class="fa-regular fa-user"></i></div>
             <div class="__text">프로필</div>
           </div>
@@ -289,6 +324,10 @@ export default {
         font-family: 'Lobster', cursive;
         font-size: 27px;
         cursor: pointer;
+        &:hover {
+          transform: scale(1.1);
+          transition: .2;
+        }
       }
       .__icon {
         font-size: 23px;

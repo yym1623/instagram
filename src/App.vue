@@ -8,6 +8,11 @@ export default {
     Header,
     Footer,
   },
+  data() {
+    return {
+      
+    }
+  },
   mounted() {
     // cookie값이 없을경우에만 로그인으로 이동 있다면 해당페이지에서 동작하게 한다
     if(!this.$cookies.get('email')) {

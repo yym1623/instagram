@@ -98,10 +98,9 @@ export default {
 
 // tablet2 ->>
 @media screen and (max-width: 999px) {
-  .message {
+  .explore {
     position: static;
     width: calc(100% - 72px);
-    padding: 0;
     .inner {
       height: 100vh;
     }
@@ -115,7 +114,7 @@ export default {
     top: 0;
     width: 100%;
     margin: auto;
-    padding: 0;
+    padding: 20px 0 0 0;
     .inner {
       height: 100vh;
       .gd {
@@ -135,7 +134,7 @@ export default {
     top: 0;
     width: 100%;
     margin: auto;
-    padding: 0;
+    padding: 20px 0 0 0;
     .inner {
       width: 100%;
       height: 100vh;

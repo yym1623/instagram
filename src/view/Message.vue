@@ -1,6 +1,11 @@
 <script>
 export default {
-
+  data() {
+    return {
+      nickname: this.$cookies.get('nickname'),
+      name: this.$cookies.get('name'),
+    }
+  },
 }
 </script>
 
@@ -8,8 +13,28 @@ export default {
   <div class="message">
     <div class="inner">
       <div class="left__info">
-        <div class="__myInfo"></div>
-        <div class="__myMenu"></div>
+        <div class="__myInfo">
+          <div class="__nicknameBox">
+            <div class="__nickname">{{ nickname }}</div>
+            <div class="__icon">
+              <span class="material-symbols-outlined">expand_more</span>
+            </div>
+          </div>
+          <div class="__newMes">
+            <i class="fa-regular fa-pen-to-square"></i>
+          </div>
+        </div>
+        <div class="__myMenu">
+          <div class="__myInfos">
+            <div class="__infoBox">
+              <div class="__myImg"></div>
+              <div class="__myData">
+                <div class="__nickname">{{ name }}</div>
+                <div class="__name">message test (date)</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="right__message">
         <div class="__message">
@@ -44,11 +69,84 @@ export default {
     border-radius: 5px;
     box-sizing: border-box;
     .left__info {
-      max-width: 350px;
-      width: 100%;
+      min-width: 350px;
+      // width: 100%;
       height: 100%;
       border-right: 1px solid rgb(219, 219, 219);
       box-sizing: border-box;
+      .__myInfo {
+        display: flex;
+        height: 60px;
+        // justify-content: center;
+        align-items: center;
+        padding: 0 20px;
+        border-bottom: 1px solid rgb(219, 219, 219);
+        box-sizing: border-box;
+        .__nicknameBox {
+          display: flex;
+          // flex가 걸린 자식요소에 felx로 각각 맞춰줄 수 있단
+          flex: 1;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          .__icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 3px;
+            span {
+              font-size: 30px;
+            }
+          }
+          &:active {
+            opacity: .8;
+          }
+        }
+        .__newMes {
+          display: flex;
+          align-items: center;
+          font-size: 24px;
+          cursor: pointer;
+        }
+      }
+      .__myMenu {
+        height: 100%;
+        overflow: hidden auto;
+        padding-top: 8px;
+        .__myInfos {
+          padding: 8px 20px;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          .__infoBox {
+            display: flex;
+            align-items: center;
+            .__myImg {
+              background: #eee;
+              width: 56px;
+              height: 56px;
+              border-radius: 50%;
+              cursor: pointer;
+            }
+            .__myData {
+              margin-left: 15px;
+              .__nickname {
+                font-size: 14px;
+                font-weight: bold;
+                color: rgb(38, 38, 38);
+              }
+              .__name {
+                margin-top: 5px;
+                font-size: 14px;
+                color: rgb(142, 142, 142);
+              }
+            }
+          }
+          &:hover {
+            background: rgb(245, 245, 245);
+          }
+        }
+      }
     }
     .right__message {
       max-width: 582px;
@@ -125,6 +223,9 @@ export default {
     padding: 0;
     .inner {
       height: 100vh;
+      .left__info {
+        min-width: 300px;
+      }
     }
   }
 }

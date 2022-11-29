@@ -6,6 +6,7 @@ import Login from '../view/Login.vue'
 import Regster from '../view/Regster.vue'
 import Explore from '../view/Explore.vue'
 import Message from '../view/Message.vue'
+import User from '../view/User.vue'
 
 export default createRouter({
   scrollBehavior() {
@@ -39,6 +40,11 @@ export default createRouter({
       path: '/message',
       name: "Message",
       component: Message
+    },
+    {
+      path: '/:id',
+      name: "User",
+      component: User
     }
   ]
 })

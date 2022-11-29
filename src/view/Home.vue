@@ -1,5 +1,5 @@
 <script>
-import Swipers, { Navigation, Pagination, Scrollbar } from 'swiper'
+import { Navigation, Pagination, Scrollbar } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 
 import 'swiper/css'
@@ -73,15 +73,15 @@ export default {
           <div class="__board">
             <div class="board__title">
               <div class="__myInfo">
-              <div class="__infoBox">
-                <div class="__myImg"></div>
-                <div class="__myData">
-                  <div class="__nickname">{{ nickname }}</div>
-                  <div class="__name">{{ name }}</div>
+                <div class="__infoBox">
+                  <div class="__myImg"></div>
+                  <div class="__myData">
+                    <div class="__nickname">{{ nickname }}</div>
+                    <div class="__name">{{ name }}</div>
+                  </div>
                 </div>
+                <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
               </div>
-              <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
-            </div>
             </div>
             <div class="board__body">
               <!-- <img class="body__img" src="" alt=""  onerror="this.src='/public/roding.png'"> -->
