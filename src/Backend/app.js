@@ -29,6 +29,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 import session from 'express-session';
 // express session -> save store
 import MySQLStore from 'express-mysql-session' 
+import { compileScript } from 'vue/compiler-sfc';
 MySQLStore(session)
 
 const options ={                                                 
@@ -121,9 +122,12 @@ app.post('/login', (req, res) => {
 								// 같은 백쪽 경로이동만 되는거같다
 								// res.redirect('/');
 							});
-							// 세션삭제
-							// req.session.destory(function(err){});
 						}
+					})
+				} else {
+					res.json({
+						success: false,
+						message: '정보가 일치하지 않습니다'
 					})
 				}
 			} else {
@@ -136,6 +140,20 @@ app.post('/login', (req, res) => {
 		}
 	})
 })
+
+// 로그아웃
+app.get('/logout', (req, res) => {
+	if (req.session.email) {
+		delete req.session.name;
+		delete req.session.email;
+		delete req.session.nickname;
+		// 세션 삭제
+		// req.session.destory(function(err){});
+		res.json({result: 'SUCCESS'});
+	} else {
+		res.json({result: 'ERROR', message: 'User is not logged in.'});
+	}
+});
 
 // 회원가입
 app.post('/regster', (req, res) => {

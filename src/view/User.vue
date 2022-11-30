@@ -24,7 +24,9 @@ export default {
       boar_ch: false,
       play_ch: false,
       save_ch: false,
-      tag_ch: false
+      tag_ch: false,
+
+      setting_ch: false,
     }
   },
   methods: {
@@ -52,6 +54,9 @@ export default {
       this.play_ch = false;
       this.save_ch = false;
       this.tag_ch = true;
+    },
+    settingBtn() {
+      this.setting_ch = !this.setting_ch;
     }
   }
 }
@@ -68,8 +73,24 @@ export default {
           <div class="__info">
             <div class="__nickname">{{ nickname }}</div>
             <button class="__change">프로필 편집</button>
-            <div class="__setting"><i class="fa-solid fa-gear"></i></div>
+            <div class="__setting" @click="settingBtn()"><i class="fa-solid fa-gear"></i></div>
           </div>
+          <!-- setting box -->
+          <div class="setting" :class="{ setting_ch }">
+            <div class="item">비밀번호 변경</div>
+            <div class="item">QR 코드</div>
+            <div class="item">앱 및 웹사이트</div>
+            <div class="item">알림</div>
+            <div class="item">개인정보 및 보안</div>
+            <div class="item">관리 감독</div>
+            <div class="item">로그인 활동</div>
+            <div class="item">instagram에서 보낸 이메일</div>
+            <div class="item">문제 신고</div>
+            <div class="item">퍼가기</div>
+            <div class="item">로그아웃</div>
+            <div class="item">취소</div>
+          </div>
+
           <div class="__data">
             <div class="bn myN">게시물</div>
             <div class="bf myN">팔로워</div>
@@ -197,6 +218,37 @@ export default {
             margin-lefT: 15px;
             cursor: pointer;
           }
+        }
+        .setting {
+          display: none;
+          position: absolute;
+          width: 400px;
+          top: 50%;
+          // left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 10;
+          // text-align: center;
+          background: #fff;
+          border-radius: 10px;
+          box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+          box-sizing: border-box;
+          .item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            border-bottom: 1px solid #eee;
+            box-sizing: border-box;
+            color: #262626;
+            font-size: 14px;
+            cursor: pointer;
+            &:last-child {
+              border-bottom: none;
+            }
+          }
+        }
+        .setting.setting_ch {
+          display: block;
         }
         .__data {
           margin-top: 30px;
@@ -372,7 +424,8 @@ export default {
             .__change {
               margin-top: 20px;
               margin-left: 0;
-              width: 200px;
+              max-width: 200px;
+              width: 100%;
             }
             .__setting {
               display: none;
@@ -383,6 +436,9 @@ export default {
           }
           .__data {
             display: none;
+          }
+          .setting {
+            width: 260px;
           }
         }
       }
@@ -411,7 +467,8 @@ export default {
         justify-content: center;
         // justify-content: space-around;
         .__menus {
-          // margin-right: 0;
+          padding-left: 0;
+          padding-right: 0;
           flex: 1 1 auto;
           justify-content: center;
           .__icon {
@@ -450,10 +507,6 @@ export default {
     .inner {
       width: 100%;
       margin: auto;
-      .__userBox {
-        // padding: 15px 15px 50px 15px; 
-        // box-sizing: border-box;
-      }
     }
   }
 }

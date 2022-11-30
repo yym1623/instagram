@@ -39,12 +39,18 @@ export default createRouter({
     {
       path: '/message',
       name: "Message",
-      component: Message
+      component: Message,
+      meta: {
+        title: '받은 메세지함'
+      }
     },
     {
       path: '/:id',
       name: "User",
-      component: User
+      component: User,
+      meta: {
+        title: '이름(닉네임)'
+      }
     }
   ]
 })

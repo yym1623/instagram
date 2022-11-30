@@ -22,6 +22,24 @@ export default {
     return {
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
+      
+      user_sample: [
+        {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
+        {"name":"lwickendon1","nickname":"Lilas","profile":"https://sungyesa.com/new/data/file/free/3699079233_vdoEG2zY_2523666B-52A6-4DD7-B32F-0C6D8FDE8D1F.jpeg"},
+        {"name":"tcotillard2","nickname":"Tiebold","profile":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5fx7465mV30augpIMD5pFNa2BWLNXWrp4uA&usqp=CAU"},
+        {"name":"cchsteney3","nickname":"Cordelia","profile":"https://images-kr.girlstyle.com/wp-content/uploads/2018/11/0000223371_001_20180810115738536.jpg"},
+        {"name":"jblakesley4","nickname":"Joscelin","profile":"https://img.hankyung.com/photo/201811/01.18271154.1.jpg"},
+        {"name":"rkirdsch5","nickname":"Robin","profile":"https://cdn.bokjitimes.com/news/photo/202002/22767_15736_3416.jpg"},
+        {"name":"mcaillou6","nickname":"Merrilee","profile":"https://cdnweb01.wikitree.co.kr/webdata/editor/202203/09/img_20220309153631_bc511c9b.webp"},
+        {"name":"slascell7","nickname":"Shelli","profile":"https://post-phinf.pstatic.net/MjAyMDEwMDhfMjU2/MDAxNjAyMTIzNjM5ODg1.jNBL7Kroe6kBSd8iL0D9gM4V516CBXZnUHFb-TBxIyIg.F1uXH4b7WuibteVcCmG-vZLniM5DrJzs2OCkqztuZnog.JPEG/%EA%B2%A8%EC%9A%B8_%EB%A9%94%EC%9D%B8%EC%BB%B7.jpg?type=w1200"},
+        {"name":"dsedcole8","nickname":"Duffie","profile":"https://img9.yna.co.kr/photo/cms/2019/02/01/81/PCM20190201000081005_P2.jpg"},
+        {"name":"rgranger9","nickname":"Reginauld","profile":"http://image.newsis.com/2022/10/31/NISI20221031_0001117996_web.jpg"},
+        {"name":"irodbournea","nickname":"Isahella","profile":"https://images.chosun.com/resizer/C6ad4fbBBVwyUdn6ziRBR_VEkL8=/616x0/smart/cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/2R24FEZO6VFKNHJKND4FGETXVY.JPG"},
+        {"name":"alamberteschib","nickname":"Auguste","profile":"http://dummyimage.com/118x100.png/ff4444/ffffff"},
+        {"name":"glubeckc","nickname":"Garrick","profile":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT05FKRbwYdbvIz_7q6yf_3Oevdk6NIoPIFrA&usqp=CAU"},
+        {"name":"wrannsd","nickname":"Waldo","profile":"https://newsimg-hams.hankookilbo.com/2022/10/06/c041ec67-565b-459d-a8e9-bb8e6a2e33b2.jpg"},
+        {"name":"cbiaggellie","nickname":"Cristiano","profile":"https://img.etoday.co.kr/pto_db/2020/06/20200621122424_1474938_466_568.jpg"}
+      ]
     }
   },
 }
@@ -37,34 +55,14 @@ export default {
           <div class="__store">
             <swiper class="swiper swiper-container" :slides-per-view="6" :space-between="20" :modules="modules" navigation>
               <div class="swiper-wrapper">
-                <!-- test item -> 7(swiper test를 위해 swiper per view보다 하나 더 추가) -->
+                <!-- 본인 -->
                 <swiper-slide class="swiper__item">
-                  <div class="__img">1</div>
+                  <div class="__img" ></div>
                   <div class="__nickname">{{ nickname }}</div>
                 </swiper-slide>
-                <swiper-slide class="swiper__item">
-                  <div class="__img">2</div>
-                  <div class="__nickname">{{ nickname }}</div>
-                </swiper-slide>
-                <swiper-slide class="swiper__item">
-                  <div class="__img">3</div>
-                  <div class="__nickname">{{ nickname }}</div>
-                </swiper-slide>
-                <swiper-slide class="swiper__item">
-                  <div class="__img">4</div>
-                  <div class="__nickname">{{ nickname }}</div>
-                </swiper-slide>
-                <swiper-slide class="swiper__item">
-                  <div class="__img">5</div>
-                  <div class="__nickname">{{ nickname }}</div>
-                </swiper-slide>
-                <swiper-slide class="swiper__item">
-                  <div class="__img">6</div>
-                  <div class="__nickname">{{ nickname }}</div>
-                </swiper-slide>
-                <swiper-slide class="swiper__item">
-                  <div class="__img">7</div>
-                  <div class="__nickname">{{ nickname }}</div>
+                <swiper-slide class="swiper__item" v-for="user in user_sample" :key="user">
+                  <img :src="user.profile" class="__img" />
+                  <div class="__nickname">{{ user.nickname }}</div>
                 </swiper-slide>
               </div>
             </swiper>
@@ -129,43 +127,11 @@ export default {
             </div>
             <div class="__sugList">
               <!-- 5개 테스트 -->
-              <div class="__item">
-                <div class="__myImg"></div>
+              <div class="__item"  v-for="user in user_sample.slice(10)" :key="user">
+                <img :src="user.profile" class="__myImg" />
                 <div class="__myData">
-                  <div class="__nickname">nickname(test)</div>
-                  <div class="__name">name(test)</div>
-                </div>
-                <div class="__transform">팔로우</div>
-              </div>
-              <div class="__item">
-                <div class="__myImg"></div>
-                <div class="__myData">
-                  <div class="__nickname">nickname(test)</div>
-                  <div class="__name">name(test)</div>
-                </div>
-                <div class="__transform">팔로우</div>
-              </div>
-              <div class="__item">
-                <div class="__myImg"></div>
-                <div class="__myData">
-                  <div class="__nickname">nickname(test)</div>
-                  <div class="__name">name(test)</div>
-                </div>
-                <div class="__transform">팔로우</div>
-              </div>
-              <div class="__item">
-                <div class="__myImg"></div>
-                <div class="__myData">
-                  <div class="__nickname">nickname(test)</div>
-                  <div class="__name">name(test)</div>
-                </div>
-                <div class="__transform">팔로우</div>
-              </div>
-              <div class="__item">
-                <div class="__myImg"></div>
-                <div class="__myData">
-                  <div class="__nickname">nickname(test)</div>
-                  <div class="__name">name(test)</div>
+                  <div class="__nickname">{{ user.nickname }}</div>
+                  <div class="__name">{{ user.name }}</div>
                 </div>
                 <div class="__transform">팔로우</div>
               </div>
@@ -478,37 +444,37 @@ export default {
           }
           .__sugList {
             .__item {
-            display: flex;
-            align-items: center;
-            padding-top: 20px;
-            .__myImg {
-              background: #eee;
-              width: 32px;
-              height: 32px;
-              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              padding-top: 20px;
+              .__myImg {
+                background: #eee;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+              }
+              .__myData {
+                margin-left: 15px;
+                .__nickname {
+                  font-size: 14px;
+                  font-weight: bold;
+                  color: rgb(38, 38, 38);
+                }
+                .__name {
+                  margin-top: 5px;
+                  font-size: 14px;
+                  color: rgb(142, 142, 142);
+                }
+              }
+            }
+            .__transform {
+              margin-left: auto;
+              font-size: 13px;
+              color: rgb( 0, 149, 246);
+              font-weight: bold;
               cursor: pointer;
             }
-            .__myData {
-              margin-left: 15px;
-              .__nickname {
-                font-size: 14px;
-                font-weight: bold;
-                color: rgb(38, 38, 38);
-              }
-              .__name {
-                margin-top: 5px;
-                font-size: 14px;
-                color: rgb(142, 142, 142);
-              }
-            }
-          }
-          .__transform {
-            margin-left: auto;
-            font-size: 13px;
-            color: rgb( 0, 149, 246);
-            font-weight: bold;
-            cursor: pointer;
-          }
           }
         }
         .__footer {
