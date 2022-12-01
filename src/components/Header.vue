@@ -1,5 +1,6 @@
 <script>
 import axios from 'axios'
+import { add } from 'dom7';
 export default {
   data() {
     return {
@@ -15,8 +16,16 @@ export default {
       tablet_display: false,
       mobile_display: false,
 
+      sample_img: false,
+      isDragged: false,
+
+      make_text: "",
+
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
+
+      // file 여러개 가능하게 한단 -> 배열
+      fileList: [],
 
       // home, search, plusMenu 3가지는 안먹힌다 (나중에 교체한다)
       home_ch: false,
@@ -73,21 +82,21 @@ export default {
     async logOut() {
       try {
         const res = await axios({
-            url: 'http://localhost:8000/logout',
-            method: 'GET',
-            data: {
-              email: this.$cookies.get('email'),
-              name : this.$cookies.get('name'),
-              nickname: this.$cookies.get('nickname'),
-            }
-          })
-          console.log(res);
+          url: 'http://localhost:8000/logout',
+          method: 'GET',
+          data: {
+            email: this.$cookies.get('email'),
+            name : this.$cookies.get('name'),
+            nickname: this.$cookies.get('nickname'),
+          }
+        })
+        console.log(res);
 
-          // 현재 -> 회원가입하면 db에 세션저장, 따로 클라엔 쿠키로 저장, 로그아웃하면 클라 쿠키 삭제후 db세션 삭제, 따로따로 되고 db세션하고 연결되있지가 않다 -> 나중에 맞춰주잔
-          this.$cookies.remove('email');
-          this.$cookies.remove('name');
-          this.$cookies.remove('nickname');
-          // this.$router.go();
+        // 현재 -> 회원가입하면 db에 세션저장, 따로 클라엔 쿠키로 저장, 로그아웃하면 클라 쿠키 삭제후 db세션 삭제, 따로따로 되고 db세션하고 연결되있지가 않다 -> 나중에 맞춰주잔
+        this.$cookies.remove('email');
+        this.$cookies.remove('name');
+        this.$cookies.remove('nickname');
+        // this.$router.go();
       } catch(e) {
         console.error(e)
       }
@@ -107,6 +116,54 @@ export default {
       }
       this.search_loding = false;
     },
+    // drop options
+    onDragenter (event) {
+      // class 넣기
+      this.isDragged = true
+    },
+    onDragleave (event) {
+      // class 삭제
+      this.isDragged = false
+    },
+    dropFile(e) {
+      const files = e.dataTransfer.files
+      this.addFiles(files)
+      // 데이터 선언해서 this로 넣고 사용해도 상관없지만 잠깐 사용하고 하는거면 해당 함수에 변수사용해서 하는거도 괜찮단
+      // let droppedFiles = e.dataTransfer.files;
+      // if (!droppedFiles) return;
+    },
+    clickFile(e) {
+      // vue에선 변수도 많이 사용한단 꼭 할당한 데이터에만 넣는 vue방식만이 아닌
+      const files = e.target.files;
+      // 메소드안에서 this로 메소드를 참조하여 인자도 넘길 수 있단
+      this.addFiles(files);
+    },
+    // 파라미터로 넘어온 파일 객체를 읽고 fileList 배열에 추가한다
+    async addFiles (files) {
+      for(let i = 0; i < files.length; i++) {
+        const src = await this.readFiles(files[i])
+        files[i].src = src
+        this.fileList.push(files[i])
+      }
+      if(this.fileList.length > 0) {
+        this.sample_img = true;
+      } else {
+        this.sample_img = false;
+      }
+    
+    },
+    // FileReader를 통해 파일을 읽어 thumbnail 영역의 src 값으로 셋팅
+    async readFiles (files) {
+      // file로 넘겨받은 img를 src같은 주소로 보여주기위해선 FileReader로 img를 데이터 url로 변환해야 보여줄 수 있단
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = async (e) => {
+          resolve(e.target.result) 
+        }
+        reader.readAsDataURL(files)
+      })
+    },
+
     homeBtn() {
       this.home_ch = true;
       this.search_ch = false;
@@ -152,6 +209,7 @@ export default {
       this.quest_ch = false;
       this.message_ch = true;
       this.notice_ch = false;
+      this.searchBox_ch = false;
       this.noticeBox_ch = false;
       this.make_ch = false;
       this.myinfo_ch = false;
@@ -263,7 +321,7 @@ export default {
     }
   },
   updated() {
-    console.log(this.open_data);
+    console.log(this.fileList);
   },
   mounted() {
     // display 크기에 따라 요소가 변해야 한다면 이렇게 window크기를 구해서 넣어줘도 되지만, css만 변경이라면 미디어 쿼리를 사용해도 무방하다
@@ -421,6 +479,58 @@ export default {
             <div class="__myData">
               <div class="__nickname">{{ nickname }}</div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- makeBox -->
+    <div class="makeBox" :class="{ sample_img }">
+      <div class="make__title" v-if="!sample_img">새 게시물 만들기</div>
+      <div class="make__title plus__title" v-else>
+        <div class="__turn"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="__title">새 게시물 만들기</div>
+        <div class="__save">공유하기</div>
+      </div>
+      <!-- vue - @drop options -->
+      <!-- + 이벤트걸고 메소드에서 prevent거는거보단 @drop.prevent로 바로 걸어서 메소드에선 코드를 줄일 수 있단 -->
+      <!-- 1. drop - file같은 input 데이터를 드래그앤 드롭으로 가능하게 해줌 - prevent를 걸면서 기본 액션을 막는다(링크 여는거 등등) -->
+      <!-- 2. dragover - drop 옵션(?) - prevent를 걸면서 드롭을 허용하도록 한다 -->
+      <!-- 3. dragenter - drop이 되었을때 거는 이벤트 - 드롭될때 class를 넣어 표시해 줄 수 있다 -->
+      <!-- 4. dragleave - drop이 해제되었을때 거는 이벤트 - 드롭이 해제될때 class를 해제하여 표시해 줄 수 있단 -->
+      <div class="make__body test__body" @drop.prevent="dropFile" @dragover.prevent @dragenter="onDragenter" @dragleave="onDragleave" :class="{ isDragged }" v-if="!sample_img">
+        <div class="body__item">
+          <img src="/public/make_img.PNG" class="__item" />
+          <div class="__item __text">사진과 동영상을 여기에 끌어다 놓으세요</div>
+          <div class="__item">
+            <!-- label이 margin이 안먹히므로 부모로 감싸서 부모로 내려준단 -->
+            <label class="__item __btn" for="file">컴퓨터에서 선택</label>
+            <input class="__changeBtn" id="file" type="file" name="myfile" @change="clickFile($event)" />
+          </div>
+        </div>
+      </div>
+      <div class="make__body" v-else>
+        <div class="make__data" v-for="make in fileList" :key="make">
+          <img :src="make.src" />
+        </div>
+        <div class="make__info">
+          <div class="info__data">
+            <div class="__img"></div>
+            <div class="__name">{{ name }}</div>
+          </div>
+          <div class="info__text">
+            <textarea name="" id="" cols="30" rows="10" v-model="make_text" placeholder="문구입력..."></textarea>
+          </div>
+          <div class="info__btn">
+            <div class="btn__text">위치 추가</div>
+            <div class="btn__icon firstBtn"><i class="fa-solid fa-location-dot"></i></div>
+          </div>
+          <div class="info__btn">
+            <div class="btn__text">접근성</div>
+            <div class="btn__icon"><span class="material-symbols-outlined">expand_more</span></div>
+          </div>
+          <div class="info__btn">
+            <div class="btn__text">고급 설정</div>
+            <div class="btn__icon"><span class="material-symbols-outlined">expand_more</span></div>
           </div>
         </div>
       </div>
@@ -889,14 +999,177 @@ export default {
       }
     }
   }
+  // makeBox
+  .makeBox {
+    transition: .3s;
+    position: absolute;
+    z-index: 100;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 720px;
+    max-height: 760px;
+    height: 100%;
+    background: #fff;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+    border-radius: 12px;
+    .make__title {
+      font-weight: bold;
+      height: 42px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      box-sizing: border-box;
+    }
+    .plus__title {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 16px;
+      .__turn {
+        font-size: 24px;
+        cursor: pointer;
+      }
+      .__title {
+
+      }
+      .__save {
+        color: #0095F6;
+        font-size: 14px;
+        cursor: pointer;
+      }
+    }
+    .make__body {
+      width: 100%;
+      height: calc(100% - 42px);
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .body__item {
+        text-align: center;
+        .__item {
+          margin-top: 15px;
+          &:first-child {
+            margin-top: 0;
+          }
+        }
+        .__text {
+          font-size: 22px;
+        }
+        .__btn {
+          background: rgb( 0, 149, 246);
+          border: 1px solid transparent;
+          outline: none;
+          padding: 5px 9px;
+          border-radius: 5px;
+          color: #fff;
+          font-weight: bold;
+          font-size: 14px;
+          cursor: pointer;
+          &:active {
+            opacity: .8;
+          }
+        }
+        .__changeBtn {
+          display: none;
+        }
+      }
+      .make__data {
+        img {
+          width: 100%;
+        }
+      }
+    }
+    .test__body {
+      // width: 100%;
+      width: auto !important;
+      height: calc(100% - 82px);
+      margin: 20px;
+      box-sizing: border-box;
+      padding: 0 !important;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .make__body.isDragged {
+      border: 5px dashed rgb( 0, 149, 246);
+      animation: 2s dash infinite;
+      @keyframes dash {
+        0% {
+          border: 5px dashed rgb( 0, 100, 246);
+        }
+        100% {
+          border: 5px dashed rgb( 0, 149, 246);
+        }
+      }
+    }
+  }
+  .makeBox.sample_img {
+    width: 1058px;
+    transition: .3s;
+    .make__body {
+      padding: 0;
+      display: flex;
+      .make__data {
+        max-width: 718px;
+        width: 100%;
+        height: 100%;
+        img {
+          height: 100%;
+        }
+      }
+      .make__info {
+        overflow-y: scroll;
+        width: calc(100% - 718px);
+        height: 100%;
+        .info__data {
+          height: 60px;
+          margin: 0 16px;
+          display: flex;
+          align-items: center;
+          .__img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgb(219, 219, 219);
+          }
+          .__name {
+            margin-left: 8px;
+            font-weight: bold;
+          }
+        }
+        .info__text {
+          margin: 0 16px;
+          textarea {
+            font-size: 14px;
+            border: none;
+            outline: none;
+            resize: none;
+            width: 100%;
+          }
+        }
+        .info__btn {
+          padding: 14px 16px;
+          // height: 45px;
+          display: flex;
+          align-items: center;
+          border-top: 1px solid #eee;
+          border-bottom: 1px solid #eee;
+          justify-content: space-between;
+          .firstBtn { 
+            padding-right: 6px;
+          }
+        }
+      }
+    }
+  }
   .second__header.searchBox_ch,
   .second__header.noticeBox_ch {
     width: 74px;
     transition: all ease .5s 0s;
     .menu {
-      .__title {
-
-      }
       .__menuItem {
         .__item {
           .__text {

@@ -4,7 +4,11 @@ export default {
     return {
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
+      user_name: "",
+      user_profile: "",
+      message_data: "",
 
+      send_ch: false,
       message: false,
 
       user_sample: [
@@ -27,19 +31,42 @@ export default {
     }
   },
   methods: {
-    sendMessage(name) {
+    sendMessage(name, img) {
       this.$router.push({
         name: 'Message',
         params: {
-          id : name
+          id : name,
+          profile : img
         }
       })
       this.message = true;
+      this.user_name = name;
+      this.user_profile = img
+    }
+  },
+  computed: {
+    // computed 만들걸 -> watch에선 선언만 하는거만으로 바뀌는건 computed에서 다 끝내놔서 그걸 선언만하면되는거다 만약 computed로 만든걸 watch로 변경된 데이터를 다시 재할당해야할 경우엔 watch 첫번째인자로 변경된값으로 변경할 순 있단  
+    send() {
+      if(this.message_data.length > 0) {
+        this.send_ch = true;
+      } else {
+        this.send_ch = false;
+      }
+    }
+  },
+  watch: {
+    // computed -> watch 연결은 함수명을 같게해주면 된다, 데이터 선언한 이름과 같게해줘도 데이터의 실시간 체크도 할 수 있단, 첫번째 인자로 변경된 데이터가 할당되서 다른값에 재할당 하고싶으면 할 수 있단
+    // ex) ajax처럼 새로고침없이 현데이터만 실시간 변경해줄때 재할당 개념으로 watch로 ajax같은 효과를 낼 수 있단? -> watch에서 안되면 computed로 하고 watch에선 선언만한다 -> computed에서 한걸 실시간 변경 및 재할당은 watch에 computed에 생성한 값의 이름을 선언만 해줘도 동작한단
+    send(e) {
+      
     }
   },
   mounted() {
     if(this.$route.params.id) {
       this.message = true;
+      this.user_name = this.$route.params.id
+      this.user_profile = this.$route.params.profile
+      // 여러개가 안나오는게 아니라 router는 주소에 담긴 동적주소만 새로고침해도 남아있는단 -> 일단 이미지도 주소로 넣고 나중에 수정하자(일단 보여야하닌깐)
     }
   }
 }
@@ -71,7 +98,7 @@ export default {
               </div>
             </div>
           </div>
-          <div class="__myInfos" v-for="user in user_sample" :key="user" @click="sendMessage(user.name)">
+          <div class="__myInfos" v-for="user in user_sample" :key="user" @click="sendMessage(user.name, user.profile)">
             <div class="__infoBox">
               <img :src="user.profile" class="__myImg" />
               <div class="__myData">
@@ -95,8 +122,9 @@ export default {
       <div class="right__messageBox" v-else>
         <div class="right__header">
           <div class="__userInfo">
-            <div class="__img"></div>
-            <div class="__name">{{ name }}</div>
+            <img v-if="user_profile" :src="user_profile" class="__img" />
+            <div v-else class="__img"></div>
+            <div class="__name">{{ user_name }}</div>
           </div>
           <div class="__itemBox">
             <!-- instagram의 icon은 전부 하얀색 바탕이지만 -> 검은색 밖에 없기 떄문에 일단 검은색으로 한단 -->
@@ -112,10 +140,15 @@ export default {
           <div class="__messageInput">
             <div class="__img f__img"><i class="fa-regular fa-face-smile"></i></div>
             <div class="__input">
-              <input type="text" placeholder="메시지 입력...">
+              <input type="text" placeholder="메시지 입력..." v-model="message_data">
             </div>
-            <div class="__img s__img"><i class="fa-regular fa-image"></i></div>
-            <div class="__img t__img"><i class="fa-regular fa-heart"></i></div>
+            <div class="__imgBox" v-if="!send_ch">
+              <div class="__img s__img"><i class="fa-regular fa-image"></i></div>
+              <div class="__img t__img"><i class="fa-regular fa-heart"></i></div>
+            </div>
+            <div class=" __sendBox" v-else>
+              <button class="sendBtn">보내기</button>
+            </div>
           </div>
         </div>
       </div>
@@ -338,6 +371,20 @@ export default {
               background: transparent;
               outline: none;
               border: none;
+            }
+          }
+          .__imgBox {
+            display: flex;
+          }
+          .__sendBox {
+            display: flex;
+            padding: 8px;
+            .sendBtn {
+              border: none;
+              background: transparent;
+              color: #0095F6;
+              font-size: 14px;
+              font-weight: bold;
             }
           }
         }

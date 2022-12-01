@@ -40,7 +40,7 @@ export default {
             this.$cookies.set('email', res.data.session.email);
             this.$cookies.set('name', res.data.session.name);
             this.$cookies.set('nickname', res.data.session.nickname);
-            this.$cookies.config("7d");
+            // this.$cookies.config("7d");
             setTimeout(() => {
               this.$router.go();
             },100)

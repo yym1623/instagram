@@ -37,7 +37,7 @@ export default createRouter({
       component: Explore
     },
     {
-      path: '/message/:id?',
+      path: '/message/:id?/:profile?',
       name: "Message",
       component: Message,
       meta: {
