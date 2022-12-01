@@ -18,8 +18,8 @@ export default {
   },
   data() {
     return {
-      nickname: this.$cookies.get('nickname'),
-      name: this.$cookies.get('name'),
+      nickname: this.$route.params.id,
+      name: this.$route.params.name,
     
       boar_ch: false,
       play_ch: false,
@@ -58,7 +58,7 @@ export default {
     settingBtn() {
       this.setting_ch = !this.setting_ch;
     }
-  }
+  },
 }
 </script>
 
@@ -102,10 +102,6 @@ export default {
       <div class="__highright">
         <!-- 여러 컴포넌트에 windth 넓이 구하는게 여러개있으면 중첩이되어 오류가 걸린다 -> 이럴때 pinia, vuex같은 상태관리에 하나로 작성하고 필요한 컴포넌트 여러군대서 불러와서 쓰기만 하면 된단 -->
         <swiper class="swiper swiper-container" :slides-per-view="6"  scrollbar :space-between="10" :modules="modules">
-          <swiper-slide class="swiper__item">
-            <div class="__img">1</div>
-            <div class="__nickname">제목</div>
-          </swiper-slide>
           <swiper-slide class="swiper__item">
             <div class="__img"><i class="fa-solid fa-plus"></i></div>
             <div class="__nickname">신규</div>

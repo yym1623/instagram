@@ -5,6 +5,8 @@ export default {
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
 
+      message: false,
+
       user_sample: [
         {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
         {"name":"lwickendon1","nickname":"Lilas","profile":"https://sungyesa.com/new/data/file/free/3699079233_vdoEG2zY_2523666B-52A6-4DD7-B32F-0C6D8FDE8D1F.jpeg"},
@@ -24,6 +26,22 @@ export default {
       ],
     }
   },
+  methods: {
+    sendMessage(name) {
+      this.$router.push({
+        name: 'Message',
+        params: {
+          id : name
+        }
+      })
+      this.message = true;
+    }
+  },
+  mounted() {
+    if(this.$route.params.id) {
+      this.message = true;
+    }
+  }
 }
 </script>
 
@@ -44,7 +62,7 @@ export default {
         </div>
         <div class="__myMenu">
           <!-- my -->
-          <div class="__myInfos">
+          <div class="__myInfos"  @click="sendMessage(name)">
             <div class="__infoBox">
               <div class="__myImg"></div>
               <div class="__myData">
@@ -53,18 +71,18 @@ export default {
               </div>
             </div>
           </div>
-          <div class="__myInfos" v-for="user in user_sample" :key="user">
+          <div class="__myInfos" v-for="user in user_sample" :key="user" @click="sendMessage(user.name)">
             <div class="__infoBox">
               <img :src="user.profile" class="__myImg" />
               <div class="__myData">
-                <div class="__nickname">{{ user.nickname }}</div>
+                <div class="__nickname">{{ user.name }}</div>
                 <div class="__name">message test (date)</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="right__message">
+      <div class="right__message" v-if="!message">
         <div class="__message">
           <div class="__logo"><i class="fa-regular fa-paper-plane"></i></div>
           <div class="__title">내 메시지</div>
@@ -73,6 +91,33 @@ export default {
         </div>
         <!-- 실제 socket message 창 연결 -->
         <!-- <div class="__message"></div> -->
+      </div>
+      <div class="right__messageBox" v-else>
+        <div class="right__header">
+          <div class="__userInfo">
+            <div class="__img"></div>
+            <div class="__name">{{ name }}</div>
+          </div>
+          <div class="__itemBox">
+            <!-- instagram의 icon은 전부 하얀색 바탕이지만 -> 검은색 밖에 없기 떄문에 일단 검은색으로 한단 -->
+            <div class="__item"><i class="fa-solid fa-phone"></i></div>
+            <div class="__item"><i class="fa-solid fa-video"></i></div>
+            <div class="__item"><i class="fa-solid fa-circle-info"></i></div>
+          </div>
+        </div>
+        <div class="right__body">
+            d
+        </div>
+        <div class="right__messageInput">
+          <div class="__messageInput">
+            <div class="__img f__img"><i class="fa-regular fa-face-smile"></i></div>
+            <div class="__input">
+              <input type="text" placeholder="메시지 입력...">
+            </div>
+            <div class="__img s__img"><i class="fa-regular fa-image"></i></div>
+            <div class="__img t__img"><i class="fa-regular fa-heart"></i></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -141,7 +186,6 @@ export default {
       .__myMenu {
         height: 100%;
         overflow: hidden auto;
-        padding-top: 8px;
         .__myInfos {
           padding: 8px 20px;
           display: flex;
@@ -224,6 +268,81 @@ export default {
         }
       }
     }
+    .right__messageBox {
+      max-width: 582px;
+      width: 100%;
+      height: 100%;
+      .right__header {
+        padding: 0 20px;
+        height: 60px;
+        border-bottom: 1px solid rgb(219, 219, 219);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .__userInfo {
+          display: flex;
+          align-items: center;
+          .__img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #eee;
+
+          }
+          .__name {
+            margin-left: 12px;
+            color: #262626;
+            font-weight: bold;
+          }
+        }
+        .__itemBox {
+          display: flex;
+          .__item {
+            font-size: 22px;
+            padding: 8px;
+          }
+        }
+      }
+      .right__body {
+        width: 100%;
+        max-height: 748px;
+        height: 100%;
+        overflow: hidden auto;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .right__messageInput {
+        margin-top: auto;
+        padding: 20px;
+        box-sizing: border-box;
+        .__messageInput {
+          display: flex;
+          align-items: center;
+          border: 1px solid rgb(219, 219, 219);
+          border-radius: 22px;
+          padding: 0 10px;
+          height: 44px;
+          box-sizing: border-box;
+
+          .__img {
+            font-size: 24px;
+            padding: 8px;
+          }
+          .__input {
+            flex: 1 1 auto;
+            max-width: 100%;
+            input {
+              width: 100%;
+              box-sizing: border-box;
+              height: 30px;
+              background: transparent;
+              outline: none;
+              border: none;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -255,6 +374,15 @@ export default {
       .left__info {
         min-width: 300px;
       }
+      .right__messageBox {
+        .right__body {
+          width: 100%;
+          max-height: 790px;
+          height: 100%;
+          padding: 20px;
+          box-sizing: border-box;
+        }
+      }
     }
   }
 }
@@ -269,6 +397,15 @@ export default {
     padding: 0;
     .inner {
       height: 100vh;
+      .right__messageBox {
+        .right__body {
+          width: 100%;
+          max-height: 743px;
+          height: 100%;
+          padding: 20px;
+          box-sizing: border-box;
+        }
+      }
     }
   }
 }

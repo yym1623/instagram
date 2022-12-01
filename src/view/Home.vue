@@ -42,6 +42,18 @@ export default {
       ]
     }
   },
+  methods: {
+    myPage(nickname, name) {
+      this.$router.push({
+        name: 'User',
+        params: {
+          id : nickname,
+          name : name
+        }
+      })
+      // this.$router.go();
+    },
+  }
 }
 </script>
 
@@ -112,7 +124,7 @@ export default {
         <div class="right__list">
           <div class="__myInfo">
             <div class="__infoBox">
-              <div class="__myImg"></div>
+              <div class="__myImg" @click="myPage(nickname, name)"></div>
               <div class="__myData">
                 <div class="__nickname">{{ nickname }}</div>
                 <div class="__name">{{ name }}</div>
@@ -128,7 +140,7 @@ export default {
             <div class="__sugList">
               <!-- 5개 테스트 -->
               <div class="__item"  v-for="user in user_sample.slice(10)" :key="user">
-                <img :src="user.profile" class="__myImg" />
+                <img :src="user.profile" class="__myImg" @click="myPage(user.nickname, user.name)" />
                 <div class="__myData">
                   <div class="__nickname">{{ user.nickname }}</div>
                   <div class="__name">{{ user.name }}</div>

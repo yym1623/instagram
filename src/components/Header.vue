@@ -30,6 +30,8 @@ export default {
 
       searchBox_ch: false,
       open_data: false,
+      noticeBox_ch: false,
+      notice_loding: false,
 
       user_sample: [
         {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
@@ -55,13 +57,18 @@ export default {
   },
   methods: {
     // router -> 동적값 전달할땐 클릭이벤트로 한단 -> 아니면 요소자체에 RouterLink로
-    myPage(nickname) {
+    // 여러 버튼에 따라 다르게 보내고싶으면 인자를 주어 각각 주면 된단
+    myPage(nickname, name) {
       this.$router.push({
         name: 'User',
         params: {
-          id : nickname
+          id : nickname,
+          name : name
         }
       })
+      // this.$router.go();
+      this.searchBox_ch = false;
+      this.noticeBox_ch = false;
     },
     async logOut() {
       try {
@@ -96,6 +103,7 @@ export default {
         }
       } else {
         this.search_user_sample = [];
+        this.searchData_ch = false;
       }
       this.search_loding = false;
     },
@@ -106,6 +114,7 @@ export default {
       this.quest_ch = false;
       this.message_ch = false;
       this.notice_ch = false;
+      this.noticeBox_ch = false;
       this.make_ch = false;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
@@ -115,14 +124,10 @@ export default {
       this.home_ch = false;
       this.search_ch = true;
       this.searchBox_ch = !this.searchBox_ch;
-      if(this.searchBox_ch) {
-        this.open_data = true;
-      } else {
-        this.open_data = false;
-      }
       this.quest_ch = false;
       this.message_ch = false;
       this.notice_ch = false;
+      this.noticeBox_ch = false;
       this.make_ch = false;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
@@ -135,6 +140,7 @@ export default {
       this.quest_ch = true;
       this.message_ch = false;
       this.notice_ch = false;
+      this.noticeBox_ch = false;
       this.make_ch = false;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
@@ -146,6 +152,7 @@ export default {
       this.quest_ch = false;
       this.message_ch = true;
       this.notice_ch = false;
+      this.noticeBox_ch = false;
       this.make_ch = false;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
@@ -153,12 +160,17 @@ export default {
       this.open_data = false;
     },
     noticeBtn() {
+      this.notice_loding = true;
       this.home_ch = false;
       this.search_ch = false;
       this.searchBox_ch = false;
       this.quest_ch = false;
       this.message_ch = false;
       this.notice_ch = true;
+      this.noticeBox_ch = !this.noticeBox_ch;
+      if(this.noticeBox_ch) {
+        this.notice_loding = false;
+      }
       this.make_ch = false;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
@@ -170,6 +182,7 @@ export default {
       this.quest_ch = false;
       this.message_ch = false;
       this.notice_ch = false;
+      this.noticeBox_ch = false;
       this.make_ch = true;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
@@ -182,6 +195,7 @@ export default {
       this.quest_ch = false;
       this.message_ch = false;
       this.notice_ch = false;
+      this.noticeBox_ch = false;
       this.make_ch = false;
       this.myinfo_ch = true;
       this.plusMenu_ch = false;
@@ -194,11 +208,15 @@ export default {
       this.quest_ch = false;
       this.message_ch = false;
       this.notice_ch = false;
+      this.noticeBox_ch = false;
       this.make_ch = false;
       this.myinfo_ch = false;
-      this.plusMenu_ch = true;
+      this.plusMenu_ch = !this.plusMenu_ch;
       this.open_data = false;
-    }
+    },
+    close_Search() {
+      this.searchBox_ch = false;
+    },
   },
   computed: {
     displaySize() {
@@ -223,8 +241,13 @@ export default {
       } else {
         this.user_display = false;
       }
-      console.log(this.user_display)
-      console.log(this.$route.name)
+    },
+    openData() {
+      if(this.searchBox_ch || this.noticeBox_ch) {
+        this.open_data = true;
+      } else {
+        this.open_data = false;
+      }
     }
   },
   watch: {
@@ -235,6 +258,12 @@ export default {
     userDisplay(e) {
 
     },
+    openData() {
+
+    }
+  },
+  updated() {
+    console.log(this.open_data);
   },
   mounted() {
     // display 크기에 따라 요소가 변해야 한다면 이렇게 window크기를 구해서 넣어줘도 되지만, css만 변경이라면 미디어 쿼리를 사용해도 무방하다
@@ -268,11 +297,11 @@ export default {
         <i class="fa-regular fa-paper-plane"></i>
       </RouterLink>
     </div>
-    <div class="second__header" :class="{ searchBox_ch }">
+    <div class="second__header" :class="{ searchBox_ch, noticeBox_ch }">
       <div class="menu">
         <RouterLink to="/" class="__title">
-          <span v-if="display > 1200">Instagram</span>
-          <span v-else><i class="fa-brands fa-instagram"></i></span>
+          <span v-if="display > 1200 && !open_data" @click="homeBtn()">Instagram</span>
+          <span v-else @click="homeBtn()"><i class="fa-brands fa-instagram"></i></span>
         </RouterLink>
         <div class="__menuItem">
           <RouterLink to="/" class="__item __home" @click="homeBtn()" :class="{ home_ch }">
@@ -306,7 +335,7 @@ export default {
             </div>
             <div class="__text" ref="text">만들기</div>
           </div>
-          <div class="__item __myinfo" @click="myPage(nickname), myinfoBtn()" :class="{ myinfo_ch }">
+          <div class="__item __myinfo" @click="myPage(nickname, name), myinfoBtn()" :class="{ myinfo_ch }">
             <div class="__icon"><i class="fa-regular fa-user"></i></div>
             <div class="__text" ref="text">프로필</div>
           </div>
@@ -340,8 +369,8 @@ export default {
           <div class="search__input">
             <!-- search type을 하면 글을 적을땐 우측상단에 지우기 버튼이 생긴단 -->
             <input type="search" placeholder="검색" v-model="data" @input="search_filter($event)">
-            <!-- 나중에 수정하잔 -->
-            <div class="search__close" v-if="display < 760">x</div>
+            <!-- 나중에 수정하잔 -> pc버전으로 옆으로 나오는거 모바일에선 위로나오게 -->
+            <div class="search__close" v-if="display < 760" @click="close_Search()"><i class="fa-solid fa-xmark"></i></div>
           </div>
         </div>
         <!-- searching -->
@@ -356,11 +385,41 @@ export default {
           </div>
         </div>
         <div class="search__list" v-else>
-          <div class="search__user" v-for="user in search_user_sample" :key="user">
+          <div class="search__user" v-for="user in search_user_sample" :key="user" @click="myPage(user.nickname, user.name)">
             <img :src="user.profile" class="__myImg" />
             <div class="__myData">
               <div class="__nickname">{{ user.nickname }}</div>
               <div class="__name">{{ user.name }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- notice Box -->
+      <div class="noticeBox" :class="{ noticeBox_ch }">
+        <div class="notice__titleBox">
+          <div class="notice__title">알림</div>
+          <div class="notice__today">
+            <div class="__today">오늘</div>
+            <div class="__todayUser" @click="myPage(nickname, name)">
+              <div class="__myImg"></div>
+              <div class="__myData">
+                <div class="__nickname">{{ nickname }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notice__list" v-if="notice_loding">
+          <div class="list__title"></div>
+          <div class="list__box">
+            <img src="https://i.gifer.com/origin/34/34338d26023e5515f6cc8969aa027bca_w200.gif" alt="">
+          </div>
+        </div>
+        <div class="notice__list" v-else>
+          <div class="__lee">이번주</div>
+          <div class="notice__user" @click="myPage(nickname, name)">
+            <div class="__myImg"></div>
+            <div class="__myData">
+              <div class="__nickname">{{ nickname }}</div>
             </div>
           </div>
         </div>
@@ -570,13 +629,14 @@ export default {
         }
       }
     }
+    // search
     .searchBox {
       position: fixed;
       top: 0;
       // left: 0;
       transform: translateX(0%);
       transition: .5s;
-      left: 72px;
+      left: 74px;
       box-shadow: 4px 0 24px rgba(0,0,0,.15);
       width: 0;
       height: 100%;
@@ -692,8 +752,145 @@ export default {
         display: block;
       }
     }
+    // notice
+    .noticeBox {
+      position: fixed;
+      top: 0;
+      // left: 0;
+      transform: translateX(0%);
+      transition: .5s;
+      left: 74px;
+      box-shadow: 4px 0 24px rgba(0,0,0,.15);
+      width: 0;
+      height: 100%;
+      background: #fff;
+      border-radius: 0 16px 16px 0;
+      padding: 8px 0;
+      box-sizing: border-box;
+      .notice__titleBox {
+        display: none;
+        .notice__title {
+          padding: 16px 24px 24px;
+          margin: 8px 0;
+          font-size: 22px;
+          color: #262626;
+          font-weight: bold;
+          box-sizing: border-box;
+        }
+        .notice__today {
+          .__today {
+            padding: 0 24px;
+            margin-bottom: 18px;
+            font-weight: bold;
+          }
+          .__todayUser {
+            display: flex;
+            align-items: center;
+            padding: 8px 24px;
+            cursor: pointer;
+            .__myImg {
+              background: #eee;
+              width: 44px;
+              height: 44px;
+              border-radius: 50%;
+              cursor: pointer;
+            }
+            .__myData {
+              margin-left: 15px;
+              .__nickname {
+                font-size: 14px;
+                font-weight: bold;
+                color: rgb(38, 38, 38);
+              }
+              .__name {
+                margin-top: 5px;
+                font-size: 14px;
+                color: rgb(142, 142, 142);
+              }
+            }
+            &:hover {
+              background: rgb(250, 250, 250);
+            }
+          }
+        }
+      }
+      .notice__list {
+        display: none;
+        width: 100%;
+        height: 100%;
+        padding-top: 20px;
+        border-top: 1px solid rgb(219, 219, 219);
+        .list__title {
+          margin: 6px 24px 8px;
+          font-weight: bold;
+          color: #262626;
+        }
+        .list__box {
+          width: 100%;
+          height: 80%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 14px;
+          color: #828282;
+          font-weight: bold;
+          img {
+            width: 35px;
+            height: 35px;
+          }
+        }
+        .__lee {
+          padding: 0 24px;
+          margin-bottom: 18px;
+          font-weight: bold;
+        }
+        .notice__user {
+          display: flex;
+          align-items: center;
+          padding: 8px 24px;
+          cursor: pointer;
+          .__myImg {
+            background: #eee;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+          }
+          .__myData {
+            margin-left: 15px;
+            .__nickname {
+              font-size: 14px;
+              font-weight: bold;
+              color: rgb(38, 38, 38);
+            }
+            .__name {
+              margin-top: 5px;
+              font-size: 14px;
+              color: rgb(142, 142, 142);
+            }
+          }
+          &:hover {
+            background: rgb(250, 250, 250);
+          }
+        }
+      }
+    }
+    .noticeBox.noticeBox_ch {
+      width: 397px;
+      // left: 72px;
+      // transform: translateX(0%);
+      transition: all ease .5s 0s;
+      // transition: .5s;
+      .notice__titleBox {
+        display: block;
+      }
+      .notice__list {
+        display: block;
+      }
+    }
   }
-  .second__header.searchBox_ch {
+  .second__header.searchBox_ch,
+  .second__header.noticeBox_ch {
     width: 74px;
     transition: all ease .5s 0s;
     .menu {
@@ -855,6 +1052,7 @@ export default {
           }
         }
       }
+      // search
       .searchBox.searchBox_ch {
         border-radius: 0;
         padding: 0;
@@ -888,6 +1086,43 @@ export default {
           }
         }
         .search__list {
+          display: block;
+        }
+      }
+      // notice
+      .noticeBox.noticeBox_ch {
+        border-radius: 0;
+        padding: 0;
+        width: 100%;
+        left: 0;
+        transition: all ease .5s 0s;
+        // transition: .5s;
+        .notice__titleBox {
+          display: block;
+          .notice__title {
+            display: none;
+          }
+          .notice__input {
+            display: flex;
+            margin: 10px;
+            input {
+              width: 100%;
+              background-size: 5%;
+              text-indent: 25px;
+              &:focus {
+                background-image: none;
+                background-position: -10px center;
+                text-indent: 0;
+              }
+            }
+            .notice__close {
+              padding: 10px;
+              margin-left: 10px;
+              text-align: center;
+            }
+          }
+        }
+        .notice__list {
           display: block;
         }
       }
