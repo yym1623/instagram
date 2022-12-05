@@ -190,5 +190,56 @@ app.post('/regster', (req, res) => {
 	})
 })
 
+// 게시물 조회
+app.get('/make_select',(req, res) => {
+	db.query(`SELECT * FROM make`, (err, row) => {
+		if(err) console.error(err);
+		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
+		res.json(row)
+	})
+})
+
+
+// 글쓰기
+app.post('/make', (req, res) => {
+	const userInfo = {
+		'email': req.body.email,
+		'name': req.body.name,
+		'nickname': req.body.nickname,
+		'img': req.body.img,
+		'write': req.body.write
+	}
+	// date
+	const today = new Date();
+
+	// 년 + 월 + 일
+	const year = today.getFullYear();
+	const month = ('0' + (today.getMonth() + 1)).slice(-2);
+	const day = ('0' + today.getDate()).slice(-2);
+	
+	// 시 + 분 + 초
+	const hours = today.getHours();
+	const minutes  = ('0' + (today.getMinutes() + 1)).slice(-2);
+	const seconds  = ('0' + today.getSeconds()).slice(-2);
+
+	const dateString = year + '-' + month  + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+	
+
+	
+	// 유효성 검사 - 중복이메일 검사
+	db.query(`SELECT * FROM user WHERE email = '${userInfo.email}'  `, (err, row) => {
+		// write같은 예약어는 사용하면 오류 걸리는거 같다 ``를 붙이지 않는이상 다른걸 쓰잔
+		const sql = `INSERT INTO make (date, email, name, nickname, img, make_write, user_id) VALUES ('${dateString}', '${userInfo.email}', '${userInfo.name}', '${userInfo.nickname}', '${userInfo.img}', '${userInfo.write}', '${row[0].idx}')`; 
+		db.query(sql, (err, row) => {
+			if(err) console.error(err);
+			// res.send(row)
+			res.json({
+				success: true,
+				message: '업로드완료'
+			})
+		})
+	})
+})
+
 
 app.listen(port, () => console.log('localhost:8000'));

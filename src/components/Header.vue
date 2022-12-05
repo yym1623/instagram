@@ -1,6 +1,5 @@
 <script>
 import axios from 'axios'
-import { add } from 'dom7';
 export default {
   data() {
     return {
@@ -36,11 +35,13 @@ export default {
       make_ch: false,
       myinfo_ch: false,
       plusMenu_ch: false,
+      success_img: false,
 
       searchBox_ch: false,
       open_data: false,
       noticeBox_ch: false,
       notice_loding: false,
+      makeBox_ch: false,
 
       user_sample: [
         {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
@@ -163,7 +164,35 @@ export default {
         reader.readAsDataURL(files)
       })
     },
-
+    async make_share() {
+      try {
+        const res = await axios({
+          url: 'http://localhost:8000/make',
+          method: 'POST',
+          data: {
+            email: this.$cookies.get('email'),
+            name: this.$cookies.get('name'),
+            nickname: this.$cookies.get('nickname'),
+            img: this.fileList[0].src,
+            write: this.make_text
+          }
+        })
+        console.log(res)
+        if(res.data.message === "업로드완료") {
+          this.sample_img = false;
+          this.success_img = true;
+          setTimeout(() => {
+            this.$router.go()
+          },2000)
+        }
+      } catch(e) {
+        console.log(e)
+      }
+    },
+    make_back() {
+      this.sample_img = false;
+      this.fileList = [];
+    },
     homeBtn() {
       this.home_ch = true;
       this.search_ch = false;
@@ -319,9 +348,6 @@ export default {
     openData() {
 
     }
-  },
-  updated() {
-    console.log(this.fileList);
   },
   mounted() {
     // display 크기에 따라 요소가 변해야 한다면 이렇게 window크기를 구해서 넣어줘도 되지만, css만 변경이라면 미디어 쿼리를 사용해도 무방하다
@@ -487,9 +513,9 @@ export default {
     <div class="makeBox" :class="{ sample_img }">
       <div class="make__title" v-if="!sample_img">새 게시물 만들기</div>
       <div class="make__title plus__title" v-else>
-        <div class="__turn"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="__turn" @click="make_back()"><i class="fa-solid fa-arrow-left"></i></div>
         <div class="__title">새 게시물 만들기</div>
-        <div class="__save">공유하기</div>
+        <div class="__save" @click="make_share()">공유하기</div>
       </div>
       <!-- vue - @drop options -->
       <!-- + 이벤트걸고 메소드에서 prevent거는거보단 @drop.prevent로 바로 걸어서 메소드에선 코드를 줄일 수 있단 -->
@@ -497,7 +523,7 @@ export default {
       <!-- 2. dragover - drop 옵션(?) - prevent를 걸면서 드롭을 허용하도록 한다 -->
       <!-- 3. dragenter - drop이 되었을때 거는 이벤트 - 드롭될때 class를 넣어 표시해 줄 수 있다 -->
       <!-- 4. dragleave - drop이 해제되었을때 거는 이벤트 - 드롭이 해제될때 class를 해제하여 표시해 줄 수 있단 -->
-      <div class="make__body test__body" @drop.prevent="dropFile" @dragover.prevent @dragenter="onDragenter" @dragleave="onDragleave" :class="{ isDragged }" v-if="!sample_img">
+      <div class="make__body test__body" @drop.prevent="dropFile" @dragover.prevent @dragenter="onDragenter" @dragleave="onDragleave" :class="{ isDragged }" v-if="(!sample_img && !success_img)">
         <div class="body__item">
           <img src="/public/make_img.PNG" class="__item" />
           <div class="__item __text">사진과 동영상을 여기에 끌어다 놓으세요</div>
@@ -506,6 +532,12 @@ export default {
             <label class="__item __btn" for="file">컴퓨터에서 선택</label>
             <input class="__changeBtn" id="file" type="file" name="myfile" @change="clickFile($event)" />
           </div>
+        </div>
+      </div>
+      <div class="make__body test__body" v-else-if="success_img">
+        <div class="body__item">
+          <img src="https://static.cdninstagram.com/rsrc.php/v3/yb/r/sHkePOqEDPz.gif" class="__item" />
+          <div class="__item __text">업로드가 완료되었습니다</div>
         </div>
       </div>
       <div class="make__body" v-else>
@@ -1051,6 +1083,7 @@ export default {
         text-align: center;
         .__item {
           margin-top: 15px;
+          pointer-events: none;
           &:first-child {
             margin-top: 0;
           }
@@ -1113,17 +1146,16 @@ export default {
       padding: 0;
       display: flex;
       .make__data {
+        display: flex;
+        align-items: center;
         max-width: 718px;
         width: 100%;
-        height: 100%;
-        img {
-          height: 100%;
-        }
       }
       .make__info {
         overflow-y: scroll;
         width: calc(100% - 718px);
         height: 100%;
+        border-left: 1px solid #eee;
         .info__data {
           height: 60px;
           margin: 0 16px;
@@ -1158,8 +1190,13 @@ export default {
           border-top: 1px solid #eee;
           border-bottom: 1px solid #eee;
           justify-content: space-between;
+
           .firstBtn { 
             padding-right: 6px;
+            cursor: auto !important; // 밑으로 갈수록 우선순위가 높아져 캔슬된단 -> 임폴턴트
+          }
+          .btn__icon {
+            cursor: pointer;
           }
         }
       }
@@ -1259,6 +1296,19 @@ export default {
     }
   }
 }
+
+// tablet2 -> makebox
+@media screen and (max-width: 1020px) {
+  .header {
+    .makeBox {
+      max-width: calc(100% - 250px);
+      max-height: calc(100% - 350px);
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
 
 // mobile
 @media screen and (max-width: 760px) {
@@ -1399,6 +1449,12 @@ export default {
           display: block;
         }
       }
+    }
+    .makeBox {
+      max-width: calc(100% - 100px);
+      max-height: calc(100% - 500px);
+      width: 100%;
+      height: 100%;
     }
   }
 }

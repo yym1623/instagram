@@ -1,6 +1,7 @@
 <script>
 import { Navigation, Pagination, Scrollbar } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
+import axios from 'axios'
 
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -52,7 +53,21 @@ export default {
         }
       })
       // this.$router.go();
-    },
+    }
+  },
+  async mounted() {
+    try {
+      // 게시물 전체 조회
+      const res = await axios.get('http://localhost:8000/make_select',);
+      console.log(res);
+      // const a = URL.createObjectURL(res.data[0].img.data);
+      // console.log(a)
+
+      
+    } catch(e) {
+      console.log(e)
+    }
+
   }
 }
 </script>
