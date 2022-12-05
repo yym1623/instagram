@@ -384,7 +384,7 @@ export default {
     <div class="second__header" :class="{ searchBox_ch, noticeBox_ch }">
       <div class="menu">
         <RouterLink to="/" class="__title">
-          <span v-if="display > 1200 && !open_data" @click="homeBtn()">Instagram</span>
+          <span v-if="display > 1260 && !open_data" @click="homeBtn()">Instagram</span>
           <span v-else @click="homeBtn()"><i class="fa-brands fa-instagram"></i></span>
         </RouterLink>
         <div class="__menuItem">
@@ -1233,7 +1233,7 @@ export default {
 }
 
 // tablet
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1260px) {
   .header {
     .second__header {
       width: 72px;
