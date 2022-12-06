@@ -97,7 +97,8 @@ export default {
         this.$cookies.remove('email');
         this.$cookies.remove('name');
         this.$cookies.remove('nickname');
-        // this.$router.go();
+        
+        this.$router.go();
       } catch(e) {
         console.error(e)
       }
@@ -205,6 +206,7 @@ export default {
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
+      this.makeBox_ch = false;
     },
     searchBtn() {
       this.home_ch = false;
@@ -218,6 +220,7 @@ export default {
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
+      this.makeBox_ch = false;
     },
     questBtn() {
       this.home_ch = false;
@@ -231,6 +234,7 @@ export default {
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
+      this.makeBox_ch = false;
     },
     messageBtn() {
       this.home_ch = false;
@@ -245,6 +249,7 @@ export default {
       this.plusMenu_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
+      this.makeBox_ch = false;
     },
     noticeBtn() {
       this.notice_loding = true;
@@ -262,6 +267,7 @@ export default {
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
+      this.makeBox_ch = false;
     },
     makeBtn() {
       this.home_ch = false;
@@ -274,6 +280,7 @@ export default {
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
+      this.makeBox_ch = !this.makeBox_ch;
     },
     myinfoBtn() {
       this.home_ch = false;
@@ -287,6 +294,7 @@ export default {
       this.myinfo_ch = true;
       this.plusMenu_ch = false;
       this.open_data = false;
+      this.makeBox_ch = false;
     },
     plusMenuBtn() {
       this.home_ch = false;
@@ -300,6 +308,7 @@ export default {
       this.myinfo_ch = false;
       this.plusMenu_ch = !this.plusMenu_ch;
       this.open_data = false;
+      this.makeBox_ch = false;
     },
     close_Search() {
       this.searchBox_ch = false;
@@ -510,7 +519,7 @@ export default {
       </div>
     </div>
     <!-- makeBox -->
-    <div class="makeBox" :class="{ sample_img }">
+    <div class="makeBox" :class="{ sample_img, makeBox_ch }">
       <div class="make__title" v-if="!sample_img">새 게시물 만들기</div>
       <div class="make__title plus__title" v-else>
         <div class="__turn" @click="make_back()"><i class="fa-solid fa-arrow-left"></i></div>
@@ -525,7 +534,7 @@ export default {
       <!-- 4. dragleave - drop이 해제되었을때 거는 이벤트 - 드롭이 해제될때 class를 해제하여 표시해 줄 수 있단 -->
       <div class="make__body test__body" @drop.prevent="dropFile" @dragover.prevent @dragenter="onDragenter" @dragleave="onDragleave" :class="{ isDragged }" v-if="(!sample_img && !success_img)">
         <div class="body__item">
-          <img src="/public/make_img.PNG" class="__item" />
+          <img src="/public/make_img.PNG" class="__item __imgItem" />
           <div class="__item __text">사진과 동영상을 여기에 끌어다 놓으세요</div>
           <div class="__item">
             <!-- label이 margin이 안먹히므로 부모로 감싸서 부모로 내려준단 -->
@@ -1033,6 +1042,7 @@ export default {
   }
   // makeBox
   .makeBox {
+    display: none;
     transition: .3s;
     position: absolute;
     z-index: 100;
@@ -1083,10 +1093,12 @@ export default {
         text-align: center;
         .__item {
           margin-top: 15px;
-          pointer-events: none;
           &:first-child {
             margin-top: 0;
           }
+        }
+        .__imgItem {
+          pointer-events: none;
         }
         .__text {
           font-size: 22px;
@@ -1138,6 +1150,9 @@ export default {
         }
       }
     }
+  }
+  .makeBox.makeBox_ch {
+    display: block;
   }
   .makeBox.sample_img {
     width: 1058px;

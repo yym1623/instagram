@@ -192,7 +192,7 @@ app.post('/regster', (req, res) => {
 
 // 게시물 조회
 app.get('/make_select',(req, res) => {
-	db.query(`SELECT * FROM make`, (err, row) => {
+	db.query(`SELECT * FROM make GROUP BY user_id order by user_id desc;`, (err, row) => {
 		if(err) console.error(err);
 		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
 		res.json(row)

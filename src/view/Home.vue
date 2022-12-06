@@ -23,6 +23,7 @@ export default {
     return {
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
+      user_list: [],
       
       user_sample: [
         {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
@@ -62,6 +63,7 @@ export default {
       console.log(res);
       // const a = URL.createObjectURL(res.data[0].img.data);
       // console.log(a)
+      this.user_list = res.data;
 
       
     } catch(e) {
@@ -95,14 +97,15 @@ export default {
             </swiper>
           </div>
           <!-- 게시글 -->
-          <div class="__board">
+          <!-- 반복문은 반복 개수만큼 반복문건 요소가 복사된다 (ex 리스트가 3개면 요소도 3개가 된다) -->
+          <div class="__board" v-for="user in user_list" :key="user">
             <div class="board__title">
               <div class="__myInfo">
                 <div class="__infoBox">
                   <div class="__myImg"></div>
                   <div class="__myData">
-                    <div class="__nickname">{{ nickname }}</div>
-                    <div class="__name">{{ name }}</div>
+                    <div class="__nickname">{{ user.nickname }}</div>
+                    <div class="__name">{{ user.name }}</div>
                   </div>
                 </div>
                 <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
@@ -118,12 +121,14 @@ export default {
                 <div class="__icons __message"><i class="fa-regular fa-paper-plane"></i></div>
                 <div class="__icons __save"><i class="fa-regular fa-bookmark"></i></div>
               </div>
-              <div class="comment__heart">
+              <!-- <div class="comment__heart">
                 <div class="heart__img"></div>
                 <div class="heart__text">test님이 좋아합니다</div>
-              </div>
+              </div> -->
               <div class="comment__info">
-                <div class="info__title">{{ nickname }}</div>
+                <!-- 띄어쓰기 한번은 띄어지니깐 한번으로 충분하면 직접 띄어쓰기로하고 더 많이 필요하면 margin같은걸 넣잔 -->
+                <!-- 데이터 하나하나보단 (둘 중 하나만 없어서 보여주면 안된다면 -> 요소 자체에 조건건단) -->
+                <div class="info__title" v-if="user.make_write !== ''">{{ user.nickname }} <span>{{ user.make_write }}</span></div>
               </div>
               <div class="comment__date">
                 <div class="date__title">1일 전</div>
@@ -134,6 +139,15 @@ export default {
                 <div class="__uploadBtn">게시</div>
               </div>
             </div>
+          </div>
+          <!-- 끝난 지점엔 항상 체크표시가 나오게 아이템 하나 추가 -->
+          <div class="__board __check">
+            <div class="__success">
+              <img src="https://static.cdninstagram.com/rsrc.php/v3/yb/r/sHkePOqEDPz.gif">
+            </div>
+            <div class="__success big">모두 확인했습니다</div>
+            <div class="__success mid">최근 3일 동안 새롭게 올라온 게시물을 모두 확인했습니다.</div>
+            <div class="__success sma">이전 게시물 보기</div>
           </div>
         </div>
         <div class="right__list">
@@ -369,6 +383,10 @@ export default {
               .info__title {
                 font-size: 14px;
                 font-weight: bold;
+                span {
+                  font-weight: 400;
+                  font-size: 13px;
+                }
               }
             }
             .comment__date {
@@ -401,6 +419,31 @@ export default {
                 margin-left: auto;
               }
             }
+          }
+        }
+        .__check {
+          padding: 32px 12px;
+          height: 235px;
+          margin-bottom: 70px;
+          // 공통인건 공통클래스로 묶어 해주지만 각각 색깔이 다르다면 각각 선언해서 해줘야한다
+          // 색깔들은 공통적인걸 사용하면 좋단 -> ex 다크모드 할떄나?
+          .__success {
+            text-align: center;
+            margin-bottom: 10px;
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+          .big {
+            font-size: 18px;
+          }
+          .mid {
+            font-size: 14px;
+            color: #828282;
+          }
+          .sma {
+            font-size: 14px;
+            color: #0095F6;
           }
         }
       }
