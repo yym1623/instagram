@@ -65,6 +65,8 @@ export default {
       // console.log(a)
       this.user_list = res.data;
 
+      const a = Buffer.from(res.data[0].img, "utf8").toString('base64') 
+      console.log(a);
       
     } catch(e) {
       console.log(e)
