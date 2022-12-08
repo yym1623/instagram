@@ -25,6 +25,8 @@ export default {
 
       // file 여러개 가능하게 한단 -> 배열
       fileList: [],
+      files: [],
+      files_name: "",
 
       // home, search, plusMenu 3가지는 안먹힌다 (나중에 교체한다)
       home_ch: false,
@@ -127,18 +129,18 @@ export default {
       // class 삭제
       this.isDragged = false
     },
-    dropFile(e) {
-      const files = e.dataTransfer.files
+    // click, drop 인자로 구분하여 하나로 합쳐서 사용한단
+    upload(e) {
+      const files = e;
+      // 함수가 다르면서 함수에다 함수를 연속 실행할 수 없는 경우엔 평범하게 데이터선언해서 값을준다음 넘겨서 재사용하면 된단
+      this.files = files[0];
+      this.files_name = files[0].name;
       this.addFiles(files)
       // 데이터 선언해서 this로 넣고 사용해도 상관없지만 잠깐 사용하고 하는거면 해당 함수에 변수사용해서 하는거도 괜찮단
       // let droppedFiles = e.dataTransfer.files;
       // if (!droppedFiles) return;
-    },
-    clickFile(e) {
       // vue에선 변수도 많이 사용한단 꼭 할당한 데이터에만 넣는 vue방식만이 아닌
-      const files = e.target.files;
       // 메소드안에서 this로 메소드를 참조하여 인자도 넘길 수 있단
-      this.addFiles(files);
     },
     // 파라미터로 넘어온 파일 객체를 읽고 fileList 배열에 추가한다
     async addFiles (files) {
@@ -167,25 +169,25 @@ export default {
     },
     async make_share() {
       try {
-        const res = await axios({
-          url: 'http://localhost:8000/make',
-          method: 'POST',
-          data: {
-            email: this.$cookies.get('email'),
-            name: this.$cookies.get('name'),
-            nickname: this.$cookies.get('nickname'),
-            img: this.fileList[0].src,
-            write: this.make_text
-          }
-        })
+        // 파일을 전송할때는 FormData 형식으로 전송하잔
+        const formData = new FormData();
+        // multer부분의 single()안의 이름과 파일자체인 즉 파일명 이름과 매칭시켜야 req.file에 들어간다(body포함이 아니니 body에 넣을껀 따로 넣고 file에 넣을꺼만 file명 매칭하면 된다)
+        formData.append("myfile", this.files);
+        formData.append("email",this.$cookies.get('email'));
+        formData.append("name",this.$cookies.get('name'));
+        formData.append("nickname",this.$cookies.get('nickname'));
+        formData.append("write", this.make_text);
+        const res = await axios.post('http://localhost:8000/make',formData)
         console.log(res)
         if(res.data.message === "업로드완료") {
           this.sample_img = false;
           this.success_img = true;
+          // 어차피 메인에서 mounted로 조회해서 가져올거라 여기선 가져올 필욘없다 -> 성공여부만 확인하잔(어차피 새로고침으로 없어져서)
           setTimeout(() => {
             this.$router.go()
           },2000)
         }
+      // axios에서 catch로 예외처리못한대신 함수전체를 try, catch로 묶어서 할순있다 -> await이 더 편하곤
       } catch(e) {
         console.log(e)
       }
@@ -532,14 +534,14 @@ export default {
       <!-- 2. dragover - drop 옵션(?) - prevent를 걸면서 드롭을 허용하도록 한다 -->
       <!-- 3. dragenter - drop이 되었을때 거는 이벤트 - 드롭될때 class를 넣어 표시해 줄 수 있다 -->
       <!-- 4. dragleave - drop이 해제되었을때 거는 이벤트 - 드롭이 해제될때 class를 해제하여 표시해 줄 수 있단 -->
-      <div class="make__body test__body" @drop.prevent="dropFile" @dragover.prevent @dragenter="onDragenter" @dragleave="onDragleave" :class="{ isDragged }" v-if="(!sample_img && !success_img)">
+      <div class="make__body test__body" @drop.prevent="upload($event.dataTransfer.files)" @dragover.prevent @dragenter="onDragenter" @dragleave="onDragleave" :class="{ isDragged }" v-if="(!sample_img && !success_img)">
         <div class="body__item">
           <img src="/public/make_img.PNG" class="__item __imgItem" />
           <div class="__item __text">사진과 동영상을 여기에 끌어다 놓으세요</div>
           <div class="__item">
             <!-- label이 margin이 안먹히므로 부모로 감싸서 부모로 내려준단 -->
             <label class="__item __btn" for="file">컴퓨터에서 선택</label>
-            <input class="__changeBtn" id="file" type="file" name="myfile" @change="clickFile($event)" />
+            <input class="__changeBtn" id="file" type="file" name="myfile" @change="upload($event.target.files)" />
           </div>
         </div>
       </div>

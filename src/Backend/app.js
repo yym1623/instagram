@@ -3,6 +3,10 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors';
+// nodejs에서 img처리 도와주는 라이브러리
+import multer from 'multer';
+// 파일경로 확인해주는 라이브러리 인거 같단
+import fs from 'fs';
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv';
 dotenv.config();
@@ -199,14 +203,39 @@ app.get('/make_select',(req, res) => {
 	})
 })
 
+// 글쓰긴
+// multer
+// 이미지 하나만 - single(), 여러개는 array()
+// multer을 이용해 파일 업로드 기능 구현
+// single()안에 이름을 formData로 넘어온 파일이름하고 맞아야 하는거 같단
+// const upload = multer({ dest: './uploads/' })
+// 파일명만 저장되니 img주소쪽에선 끝에 + png 붙여준단 -> 프론트쪽엔선 서버 보내기전에 따로 src로 데이터만들어서 보여주니 상관없단
+// 일단 싱글 후 성공하면 여러개로 한단
+// 전분 데이터로 할 필요없고 고정값들은 직접 문자열로 데이터랑 +로 매칭시키면 된단 -< 일단되게하고 나중에 효율적인게있으면 바꾼단
+// const upload = multer({ dest: 'public/uploads/' })
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/uploads/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.filename + '.png')
+  }
+})
 
-// 글쓰기
-app.post('/make', (req, res) => {
+const upload = multer({ storage: storage })
+app.post('/make', upload.single('myfile'), function (req, res, next) {
+	console.log(req.file)
+	console.log(req.body)
+
+	// path가 /가 끊겨나오는 이유로 합쳐준단
+	// 매칭시키잔 디비 + 저장이미지 -> 파일명이 변해도 이미지 데이터 자체가 저장되는거라 매칭만해주면 불러와진단
+	// 이미지데이터 자체를 저장 -> url주소가 아니라 내 pc에 저장되면서 불러오는거단, url주소로저장 등등 ㄴㄴ
+	const img =	"/public/uploads/" + req.file.filename;
+
 	const userInfo = {
 		'email': req.body.email,
 		'name': req.body.name,
 		'nickname': req.body.nickname,
-		'img': req.body.img,
 		'write': req.body.write
 	}
 	// date
@@ -223,19 +252,17 @@ app.post('/make', (req, res) => {
 	const seconds  = ('0' + today.getSeconds()).slice(-2);
 
 	const dateString = year + '-' + month  + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
-	
 
-	
 	// 유효성 검사 - 중복이메일 검사
 	db.query(`SELECT * FROM user WHERE email = '${userInfo.email}'  `, (err, row) => {
 		// write같은 예약어는 사용하면 오류 걸리는거 같다 ``를 붙이지 않는이상 다른걸 쓰잔
-		const sql = `INSERT INTO make (date, email, name, nickname, img, make_write, user_id) VALUES ('${dateString}', '${userInfo.email}', '${userInfo.name}', '${userInfo.nickname}', '${userInfo.img}', '${userInfo.write}', '${row[0].idx}')`; 
+		const sql = `INSERT INTO make (date, email, name, nickname, img, make_write, user_id) VALUES ('${dateString}', '${userInfo.email}', '${userInfo.name}', '${userInfo.nickname}', '${img}', '${userInfo.write}', '${row[0].idx}')`; 
 		db.query(sql, (err, row) => {
 			if(err) console.error(err);
 			// res.send(row)
 			res.json({
 				success: true,
-				message: '업로드완료'
+				message: '업로드완료',
 			})
 		})
 	})

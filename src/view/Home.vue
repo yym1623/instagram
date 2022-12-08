@@ -16,7 +16,7 @@ export default {
   // setup() -> 처음 접속시의 라이프사이클인 mounted()같은거인거 같다
   setup() {
     return {
-      modules: [ Navigation, Pagination, Scrollbar ],
+      modules: [ Navigation, Pagination, Scrollbar ]
     }
   },
   data() {
@@ -64,10 +64,6 @@ export default {
       // const a = URL.createObjectURL(res.data[0].img.data);
       // console.log(a)
       this.user_list = res.data;
-
-      const a = Buffer.from(res.data[0].img, "utf8").toString('base64') 
-      console.log(a);
-      
     } catch(e) {
       console.log(e)
     }
@@ -114,7 +110,7 @@ export default {
               </div>
             </div>
             <div class="board__body">
-              <!-- <img class="body__img" src="" alt=""  onerror="this.src='/public/roding.png'"> -->
+              <img class="body__img" :src="user.img">
             </div>
             <div class="board__content">
               <div class="content__comu">
@@ -332,7 +328,7 @@ export default {
           }
           .board__body {
             max-height: 590px;
-            min-height: 275px;
+            // min-height: 275px;
             // height: 100%;
             .body__img {
               width: 100%;
