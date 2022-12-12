@@ -228,16 +228,16 @@ export default {
       this.home_ch = false;
       this.search_ch = false;
       this.searchBox_ch = false;
+      this.quest_ch = true;
       if(this.displaySize > 760) {
-        this.quest_ch = true;
         this.make_ch = false;
+        this.noticeBox_ch = false;
       } else {
         this.make_ch = true;
         this.query_ch = false;
       }
       this.message_ch = false;
       this.notice_ch = false;
-      this.noticeBox_ch = false;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
