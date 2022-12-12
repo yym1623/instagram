@@ -59,7 +59,7 @@ export default {
   async mounted() {
     try {
       // 게시물 전체 조회
-      const res = await axios.get('http://localhost:8000/make_select',);
+      const res = await axios.get('http://localhost:8000/make_select');
       console.log(res);
       // const a = URL.createObjectURL(res.data[0].img.data);
       // console.log(a)
@@ -328,6 +328,7 @@ export default {
           }
           .board__body {
             max-height: 590px;
+            // 사진이 디스플레이 맞게 height widthg 줄어든단 ->부모 자식 100프로맞춘다 부모는 min걸면 그만큼까지 줄어드니깐 참곤
             // min-height: 275px;
             // height: 100%;
             .body__img {

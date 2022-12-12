@@ -1,6 +1,7 @@
 <script>
 import { Navigation, Pagination, Scrollbar } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
+import axios from 'axios';
 
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -21,12 +22,14 @@ export default {
       nickname: this.$route.params.id,
       name: this.$route.params.name,
     
-      boar_ch: false,
+      boar_ch: true,
       play_ch: false,
       save_ch: false,
       tag_ch: false,
 
       setting_ch: false,
+
+      user_list: []
     }
   },
   methods: {
@@ -59,6 +62,19 @@ export default {
       this.setting_ch = !this.setting_ch;
     }
   },
+  async mounted() {
+    const email = this.$cookies.get('email');
+
+    // 주소안에 변수넣을게 아니라면 ``말고 ''로 쓰잔
+    // aixos.post로 줄여서 두번째인자로 데이터주니깐 데이터가 안온다 객체로 data로 주니깐 간다 -> 대체모냔 -> 알아보잔axioss
+    const res = await axios({
+      url: 'http://localhost:8000/user_make_select',
+      method: 'POST',
+      data: { email }
+    })
+    console.log(res);
+    this.user_list = res.data;
+  }
 }
 </script>
 
@@ -135,17 +151,13 @@ export default {
         </div>
       </div>
       <div class="__data">
+        <!-- 부모에서 반복쓰면 부모전체가 반복된다 아이템에다가 해야한다 -> 잘 구분해서 쓰잔(순서) -->
         <div class="gd">
           <!-- test (9) -->
-          <div class="__item"></div>
-          <div class="__item"></div>
-          <div class="__item"></div>
-          <div class="__item"></div>
-          <div class="__item"></div>
-          <div class="__item"></div>
-          <div class="__item"></div>
-          <div class="__item"></div>
-          <div class="__item"></div>
+          <!-- v-for 반복문키는 아이템 전체를 줘도되지만 아이템안에 이름으로 구별해줘도 좋단 -->
+          <div class="__item" v-for="user_item in user_list" :key="user_item">
+            <img :src="user_item.img" alt="">
+          </div>
         </div>
       </div>
     </div>
@@ -156,7 +168,7 @@ export default {
 .user {
   width: calc(100% - 335px);
   // 처음 예시로 정할때만 사용 -> 값이 늘어나서 해당값을 초과하면 디자인이 꺠진단 - min이면 상관없다
-  // min-height: 100vh;
+  min-height: 100vh;
   margin-left: auto;
   background: rgb(250, 250, 250);
   padding: 30px 20px 20px 20px;
@@ -351,6 +363,14 @@ export default {
           height: auto;
           background: #fff;
           box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          img {
+            width: 100%;
+            // height: 100%;
+          }
         }
       }
     }

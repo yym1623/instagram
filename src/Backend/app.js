@@ -9,6 +9,7 @@ import multer from 'multer';
 import fs from 'fs';
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv';
+import { v4 } from 'uuid';
 dotenv.config();
 
 // db
@@ -196,7 +197,20 @@ app.post('/regster', (req, res) => {
 
 // 게시물 조회
 app.get('/make_select',(req, res) => {
-	db.query(`SELECT * FROM make GROUP BY user_id order by user_id desc;`, (err, row) => {
+	db.query(`SELECT * FROM make WHERE idx IN (SELECT MAX(idx) FROM make GROUP BY user_id) ORDER BY idx DESC;`, (err, row) => {
+		if(err) console.error(err);
+		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
+		res.json(row)
+	})
+})
+
+
+
+// 본인글 조회
+app.post('/user_make_select',(req, res) => {
+	// 하나일땐 따로 변수만들어서 할 필요 없이 바로 넣잔
+	console.log(req.body.email)
+	db.query(`SELECT * FROM make WHERE email = '${req.body.email}'`, (err, row) => {
 		if(err) console.error(err);
 		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
 		res.json(row)
@@ -218,14 +232,14 @@ const storage = multer.diskStorage({
     cb(null, 'public/uploads/')
   },
   filename: function (req, file, cb) {
-    cb(null, file.filename + '.png')
+    cb(null, v4() + "_" + file.filename + '.png')
   }
 })
 
 const upload = multer({ storage: storage })
 app.post('/make', upload.single('myfile'), function (req, res, next) {
-	console.log(req.file)
-	console.log(req.body)
+	// console.log(req.file)
+	// console.log(req.body)
 
 	// path가 /가 끊겨나오는 이유로 합쳐준단
 	// 매칭시키잔 디비 + 저장이미지 -> 파일명이 변해도 이미지 데이터 자체가 저장되는거라 매칭만해주면 불러와진단

@@ -228,11 +228,16 @@ export default {
       this.home_ch = false;
       this.search_ch = false;
       this.searchBox_ch = false;
-      this.quest_ch = true;
+      if(this.displaySize > 760) {
+        this.quest_ch = true;
+        this.make_ch = false;
+      } else {
+        this.make_ch = true;
+        this.query_ch = false;
+      }
       this.message_ch = false;
       this.notice_ch = false;
       this.noticeBox_ch = false;
-      this.make_ch = false;
       this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
@@ -412,6 +417,7 @@ export default {
             <div class="__icon"><i class="fa-regular fa-compass"></i></div>
             <div class="__text" ref="text">탐색 탭</div>
           </RouterLink>
+          <!-- 조건에따라 아이콘이 바뀌면 부모요소말고 해당 자식에 각각 넣어야한단 -> 부모가 라우터라 막지못하고 바로 이동된다면 해당 클릭버튼 안에서 구분한단 -->
           <RouterLink to="/message" class="__item __message" @click="messageBtn()" :class="{ message_ch }">
             <div class="__icon"><i class="fa-regular fa-paper-plane"></i></div>
             <div class="__text" ref="text">메세지</div>
