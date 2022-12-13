@@ -212,14 +212,17 @@ export default {
     },
     searchBtn() {
       this.home_ch = false;
-      this.search_ch = true;
       this.searchBox_ch = !this.searchBox_ch;
+      if(!this.searchBox_ch) {
+        this.search_ch = false;
+      } else {
+        this.search_ch = true;
+      }
       this.quest_ch = false;
       this.message_ch = false;
       this.notice_ch = false;
       this.noticeBox_ch = false;
       this.make_ch = false;
-      this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
       this.makeBox_ch = false;
@@ -229,13 +232,9 @@ export default {
       this.search_ch = false;
       this.searchBox_ch = false;
       this.quest_ch = true;
-      if(this.displaySize > 760) {
-        this.make_ch = false;
-        this.noticeBox_ch = false;
-      } else {
-        this.make_ch = true;
-        this.query_ch = false;
-      }
+      this.query_ch = false;
+      this.noticeBox_ch = false;
+      this.make_ch = false;
       this.message_ch = false;
       this.notice_ch = false;
       this.myinfo_ch = false;
@@ -265,16 +264,23 @@ export default {
       this.searchBox_ch = false;
       this.quest_ch = false;
       this.message_ch = false;
-      this.notice_ch = true;
-      this.noticeBox_ch = !this.noticeBox_ch;
+      // display size구하는건 여러 컴포넌트에서 구한다음 합쳐지면 오류가 걸린단 한곳에서만 가능하니 -> 스토어로 구성해서 가져오잔 -> 이건될듯 하나에서 가져와서 쓰는거니 -> 안되는건 여러곳에서 해서 중복되어져서 그런듯하단
+      if(this.display > 760) {
+        this.noticeBox_ch = !this.noticeBox_ch;
+      } else {
+        this.makeBox_ch = !this.makeBox_ch;
+      }
       if(this.noticeBox_ch) {
         this.notice_loding = false;
       }
+      if(!this.noticeBox_ch) {
+        this.notice_ch = false;
+      } else {
+        this.notice_ch = true;
+      }
       this.make_ch = false;
-      this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
-      this.makeBox_ch = false;
     },
     makeBtn() {
       this.home_ch = false;
@@ -283,11 +289,18 @@ export default {
       this.message_ch = false;
       this.notice_ch = false;
       this.noticeBox_ch = false;
-      this.make_ch = true;
-      this.myinfo_ch = false;
       this.plusMenu_ch = false;
       this.open_data = false;
-      this.makeBox_ch = !this.makeBox_ch;
+      if(this.display > 760) {
+        this.makeBox_ch = !this.makeBox_ch;
+      } else {
+        this.noticeBox_ch = !this.noticeBox_ch;
+      }
+      if(!this.makeBox_ch) {
+        this.make_ch = false;
+      } else {
+        this.make_ch = true;
+      }
     },
     myinfoBtn() {
       this.home_ch = false;
@@ -312,7 +325,6 @@ export default {
       this.notice_ch = false;
       this.noticeBox_ch = false;
       this.make_ch = false;
-      this.myinfo_ch = false;
       this.plusMenu_ch = !this.plusMenu_ch;
       this.open_data = false;
       this.makeBox_ch = false;
@@ -1445,6 +1457,11 @@ export default {
         // transition: .5s;
         .notice__titleBox {
           display: block;
+          .notice__today {
+            .__today {
+              padding-top: 20px;
+            }
+          }
           .notice__title {
             display: none;
           }

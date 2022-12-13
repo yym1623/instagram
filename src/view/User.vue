@@ -60,6 +60,9 @@ export default {
     },
     settingBtn() {
       this.setting_ch = !this.setting_ch;
+    },
+    close_setting() {
+      this.setting_ch = false;
     }
   },
   async mounted() {
@@ -104,7 +107,7 @@ export default {
             <div class="item">문제 신고</div>
             <div class="item">퍼가기</div>
             <div class="item">로그아웃</div>
-            <div class="item">취소</div>
+            <div class="item" @click="close_setting()">취소</div>
           </div>
 
           <div class="__data">
@@ -252,6 +255,9 @@ export default {
             cursor: pointer;
             &:last-child {
               border-bottom: none;
+            }
+            &:hover {
+              background: rgb(250, 250, 250);
             }
           }
         }

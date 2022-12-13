@@ -1,4 +1,5 @@
 <script>
+import io from 'socket.io-client';
 export default {
   data() {
     return {
@@ -7,9 +8,14 @@ export default {
       user_name: "",
       user_profile: "",
       message_data: "",
-
+      // 주소는 server꺼를 넣는단
+      // poling 오류가 걸린다 -> io 두번째 인자인 transports -> websocket으로 설정하니 해결했단
+      socket: io('localhost:8000', { transports: ['websocket'] }),
+      
       send_ch: false,
       message: false,
+      left_hide: false,
+      right_hide: false,
 
       user_sample: [
         {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
@@ -32,6 +38,8 @@ export default {
   },
   methods: {
     sendMessage(name, img) {
+      this.left_hide = true;
+      this.right_hide = false;
       this.$router.push({
         name: 'Message',
         params: {
@@ -42,6 +50,34 @@ export default {
       this.message = true;
       this.user_name = name;
       this.user_profile = img
+    },
+    closeMessage() {
+      this.right_hide = true;
+      this.left_hide = false;
+    },
+    // message가 예약어라 안된거 같단 -> 오류메세지 잘읽어라 not a function -> 함수조차 생성이 안된거지 소켓문제가 아니단
+    messageBtn() {
+      // message -> socket test
+      // const socket = io('http://localhost:5173', {
+      //   transports: ["websocket"],
+      //   // 이걸 설정하지 않으면 오류가 난다고 한다
+      //   withCredentials: true
+      // })
+      // 서버로 데이터 보내기
+      this.socket.emit('chat', this.message_data)
+      this.message_data = '';
+      // 서버에서 보낸 데이터 받기
+      this.socket.on('chat', (data) => {
+        console.log(data)
+      })
+      
+      
+      // socket.emit("login", {
+      //   // name: "ungmo2",
+      //   msg: this.message_data
+      // });
+
+
     }
   },
   computed: {
@@ -67,6 +103,8 @@ export default {
       this.user_name = this.$route.params.id
       this.user_profile = this.$route.params.profile
       // 여러개가 안나오는게 아니라 router는 주소에 담긴 동적주소만 새로고침해도 남아있는단 -> 일단 이미지도 주소로 넣고 나중에 수정하자(일단 보여야하닌깐)
+    
+      // 보통 본인꺼라 그냥 ()로 하는구난 -> 서버꺼 연동하기위해 하는줄 알았단 -> 블로그에선 서버꺼 넣던데?
     }
   }
 }
@@ -75,7 +113,7 @@ export default {
 <template>
   <div class="message">
     <div class="inner">
-      <div class="left__info">
+      <div class="left__info" :class="{ left_hide }">
         <div class="__myInfo">
           <div class="__nicknameBox">
             <div class="__nickname">{{ nickname }}</div>
@@ -119,11 +157,10 @@ export default {
         <!-- 실제 socket message 창 연결 -->
         <!-- <div class="__message"></div> -->
       </div>
-      <div class="right__messageBox" v-else>
+      <div class="right__messageBox" v-else :class="{ right_hide }">
         <div class="right__header">
           <div class="__userInfo">
-            <img v-if="user_profile" :src="user_profile" class="__img" />
-            <div v-else class="__img"></div>
+            <div class="close__message" @click="closeMessage()"><span class="material-symbols-outlined">chevron_left</span></div>
             <div class="__name">{{ user_name }}</div>
           </div>
           <div class="__itemBox">
@@ -147,7 +184,7 @@ export default {
               <div class="__img t__img"><i class="fa-regular fa-heart"></i></div>
             </div>
             <div class=" __sendBox" v-else>
-              <button class="sendBtn">보내기</button>
+              <button class="sendBtn" @click="messageBtn()">보내기</button>
             </div>
           </div>
         </div>
@@ -315,15 +352,14 @@ export default {
         .__userInfo {
           display: flex;
           align-items: center;
-          .__img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #eee;
-
+          .close__message {
+            span {
+              font-size: 27px;
+              cursor: pointer;
+            }
           }
           .__name {
-            margin-left: 12px;
+            // margin-left: 12px;
             color: #262626;
             font-weight: bold;
           }
@@ -444,7 +480,17 @@ export default {
     padding: 0;
     .inner {
       height: 100vh;
+      .left__info {
+        width: 100%;
+      }
+      .left__info.left_hide {
+        display: none;
+      }
+      .right__message {
+        display: none;
+      }
       .right__messageBox {
+        max-width: 100%;
         .right__body {
           width: 100%;
           max-height: 743px;
@@ -452,6 +498,9 @@ export default {
           padding: 20px;
           box-sizing: border-box;
         }
+      }
+      .right__messageBox.right_hide {
+        display: none;
       }
     }
   }

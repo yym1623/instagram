@@ -10,6 +10,9 @@ import fs from 'fs';
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv';
 import { v4 } from 'uuid';
+import http from 'http';
+import { Server } from "socket.io";
+
 dotenv.config();
 
 // db
@@ -17,11 +20,28 @@ import db from './config/db_config.js';
 
 const app = express();
 
+// 서버를 http로 등록한다
+const server =  http.createServer(app);
+
+// socket.io
+const io = new Server(server, {
+  cors: {
+		// 서버 본인껄 origin 하지않는다 cors -> 클라쪽껄 해준단
+    origin: ['http://localhost:5173']
+  }
+})
+
 const port = process.env.PORT || 8000;
 
 // 미들웨어
 // cors
 app.use(cors());
+// app.use(
+//   cors({
+//     origin: "http://127.0.0.1:5500",
+//     credentials: true,
+//   })
+// );
 
 // bodyParser? - POST 방식 전송을 위해서 필요함
 app.use(bodyParser.json());
@@ -33,8 +53,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // express session
 import session from 'express-session';
 // express session -> save store
-import MySQLStore from 'express-mysql-session' 
-import { compileScript } from 'vue/compiler-sfc';
+import MySQLStore from 'express-mysql-session'
 MySQLStore(session)
 
 const options ={                                                 
@@ -60,6 +79,61 @@ app.use(session({
 	store: sessionStore
 }));
 
+// socket
+// io -> 전체
+// io.on -> 전체에 대하여 connection을 걸어선 그 안에서 socket으로 해당 클라이언트끼리만 각각 사용한단
+io.on('connection', function(socket) {
+// 첫번째 인자인 socket -> 전송한 클라이언트에게만 한단
+
+  // 클라이언트가 전송한 메세지 수신하기 1 ---------------
+  // 접속한 클라이언트의 정보가 수신되면
+  // socket.on('login', function(data) {
+  //   console.log('Message from Client: ' + data);
+
+  //   // socket에 클라이언트 정보를 저장한다
+  //   socket.name = data.name;
+  //   socket.userid = data.userid;
+
+  //   // 접속된 모든 클라이언트에게 메시지를 전송한다
+  //   io.emit('login', data.name );
+  // });
+  // 클라이언트가 전송한 메세지 수신하기 끝 --------------
+
+
+  // 클라이언트로부터의 메시지가 수신되면 2 --------------
+  socket.on('chat', function(data) {
+    // console.log('Message from %s: %s', socket.name, data.msg);
+
+    // const msg = data.msg;
+		console.log(data)
+		// console.log(msg)
+
+
+    // // 클라이언트에게 메시지 송신
+    io.emit('msg', data);
+    // socket.disconnect();
+
+  });
+  // 클라이언트로부터의 메세지가 수신되면 끝 ---------------------
+
+
+
+  // 메시지를 전송한 클라이언트를 제외한 모든 클라이언트에게 메시지를 전송한다
+  // socket.broadcast.emit('chat', msg);
+
+  // 메시지를 전송한 클라이언트에게만 메시지를 전송한다
+  // socket.emit('s2c chat', msg);
+
+  // 접속된 모든 클라이언트에게 메시지를 전송한다
+  // io.emit('s2c chat', msg);
+
+  // 특정 클라이언트에게만 메시지를 전송한다
+  // io.to(id).emit('s2c chat', data);
+  
+  // socket.on('chat', function() {
+  //   console.log('user disconnected: ' + socket.name);
+  // });
+})
 
 
 
@@ -282,5 +356,6 @@ app.post('/make', upload.single('myfile'), function (req, res, next) {
 	})
 })
 
-
-app.listen(port, () => console.log('localhost:8000'));
+// socekt 때매 변경해서 사용해보긴 -> http server 설정한걸로 사용해야한다
+server.listen(port, () => console.log('localhost:8000'));
+// app.listen(port, () => console.log('localhost:8000'));
