@@ -83,38 +83,22 @@ app.use(session({
 // io -> 전체
 // io.on -> 전체에 대하여 connection을 걸어선 그 안에서 socket으로 해당 클라이언트끼리만 각각 사용한단
 io.on('connection', function(socket) {
-// 첫번째 인자인 socket -> 전송한 클라이언트에게만 한단
-
-  // 클라이언트가 전송한 메세지 수신하기 1 ---------------
-  // 접속한 클라이언트의 정보가 수신되면
-  // socket.on('login', function(data) {
-  //   console.log('Message from Client: ' + data);
-
-  //   // socket에 클라이언트 정보를 저장한다
-  //   socket.name = data.name;
-  //   socket.userid = data.userid;
-
-  //   // 접속된 모든 클라이언트에게 메시지를 전송한다
-  //   io.emit('login', data.name );
-  // });
-  // 클라이언트가 전송한 메세지 수신하기 끝 --------------
-
-
-  // 클라이언트로부터의 메시지가 수신되면 2 --------------
+	// 받고 보낼때 첫번쨰 인자 클라랑 맞춰주기
+	// emit -> 보내기
+	// on -> 받기 
   socket.on('chat', function(data) {
-    // console.log('Message from %s: %s', socket.name, data.msg);
-
-    // const msg = data.msg;
-		console.log(data)
-		// console.log(msg)
+		console.log(data);
 
 
-    // // 클라이언트에게 메시지 송신
-    io.emit('msg', data);
-    // socket.disconnect();
+		db.query(`INSERT INTO msg (msg, list_id) VALUE ('${data.msg}', '${data.idx}')  `, (err, row) => {
+			if(err) console.error(err);
+			console.log(row);
+		})
+
+    // 클라이언트에게 메시지 송신
+    socket.emit('chat', data);
 
   });
-  // 클라이언트로부터의 메세지가 수신되면 끝 ---------------------
 
 
 
@@ -143,16 +127,6 @@ app.get('/', function(req, res){
 })
 
 // db query
-// db.connect();
-
-// 조회
-app.get('/users',(req, res) => {
-	db.query('SELECT * FROM user', (err, results) => {
-		if(err) throw err;
-		res.send(results)
-		console.log('select success');
-	})
-})
 
 // 기록 - 데이터 보내는건 get으로도 params라는걸 이용해 보낼 수 있지만 어째선지 데이터 보내는건 post -> data로만 보내진다 일단 데이터 전송에 있어선 post로 하잔
 
@@ -269,6 +243,29 @@ app.post('/regster', (req, res) => {
 	})
 })
 
+// 유저 조횐 -> 조회된 아이디가 최상단으로 해야하니 post로 바꾼다
+// 필요한곳에서만 요청하고 재활용하잔
+// 모두 app.vue로 전체로 가져와도 되지만 필요한곳에서만 쓰는게 좋단
+app.post('/user',(req, res) => {
+	// 특정 조건값을 기준으로 정렬하기 -> case
+	db.query(`SELECT * FROM user ORDER BY (CASE WHEN email='${req.body.email}' THEN 1 ELSE 0 END) DESC`, (err, row) => {
+		if(err) console.error(err);
+		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
+		res.json(row)
+	})
+})
+
+// 메세지 유저이름만 다시 요청
+app.post('/user_name',(req, res) => {
+	// 특정 조건값을 기준으로 정렬하기 -> case
+	db.query(`SELECT * FROM user WHERE email = '${req.body.email}'`, (err, row) => {
+		if(err) console.error(err);
+		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
+		res.json(row[0].name)
+	})
+})
+
+
 // 게시물 조회
 app.get('/make_select',(req, res) => {
 	db.query(`SELECT * FROM make WHERE idx IN (SELECT MAX(idx) FROM make GROUP BY user_id) ORDER BY idx DESC;`, (err, row) => {
@@ -278,6 +275,61 @@ app.get('/make_select',(req, res) => {
 	})
 })
 
+// 메세지 리스트 박스
+app.post('/msg_list',(req, res) => {
+	console.log(req.body)
+	// user -> 본인 idx -> msg_list에 넣어서 매칭한단
+	// db 여러개 넣을땐 같은 req이름이면 해당 db들어가기전까진 현재 db값의 req값이단 -> 순서대로 들감
+	// db.query(`SELECT * FROM user WHERE email = '${req.body.email}'`, (err, row) => {
+		// if(err) console.error(err);
+
+		// 클라에서 전체조회로 클릭한거에 대한 id를 보내면 따로 조회를 할필욘 없어서 코드가 준단
+		// 조건마다 다르게 줄거면 달라지니깐 let으로 선언만한다 -> const는 변경이 안되니 선언만하면 오류걸린단
+		let idx;
+		if(req.body.my_idx === req.body.idx) {
+			idx = req.body.idx;
+		} else {
+			idx = req.body.my_idx + ',' + req.body.idx;
+		}
+		console.log(idx)
+		db.query(`SELECT * FROM msg_list WHERE msg_list = '${idx}'`, (err, row) => {
+			if(err) console.error(err);
+			// 보통 없으면 위에서 리턴으로 끝내고 있으면 내려가니 이렇게 순서를 맞춘단
+			if(row.length !== 0) {
+				console.log('있음');
+				return;
+			} else {
+				db.query(`INSERT INTO msg_list (msg_list) VALUE ('${idx}')`, (err, row) => {
+					if(err) console.error(err);
+				})
+			}
+
+		})
+		db.query(`SELECT * FROM msg WHERE list_id = '${req.body.idx}'`, (err, row) => {
+			if(err) console.error(err);
+			if(row.length !== 0) {
+				// 메세지 출력
+				res.json(row.msg);
+			}
+		})
+})
+
+// 메세지 작성하긴
+// app.post('/send_msg',(req, res) => {
+// 	db.query(`INSERT INTO msg (msg, list_id) VALUE ('${req.body.msg}', '${req.body.idx}')  `, (err, row) => {
+// 		if(err) console.error(err);
+// 		console.log(row);
+// 	})
+// });
+
+// 아이디에 맞는 글 조회하기
+app.post('/select_msg',(req, res) => {
+	db.query(`SELECT * FROM msg WHERE list_id = '${req.body.idx}'`, (err, row) => {
+		if(err) console.error(err);
+		console.log(row);
+		res.json(row);
+	})
+});
 
 
 // 본인글 조회

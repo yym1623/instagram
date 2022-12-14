@@ -1,13 +1,19 @@
 <script>
+import axios from 'axios';
 import io from 'socket.io-client';
 export default {
   data() {
     return {
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
+      email: this.$cookies.get('email'),
       user_name: "",
       user_profile: "",
       message_data: "",
+      user_list: [],
+      msg_list: [],
+      idx: 0,
+      my_idx: 0,
       // 주소는 server꺼를 넣는단
       // poling 오류가 걸린다 -> io 두번째 인자인 transports -> websocket으로 설정하니 해결했단
       socket: io('localhost:8000', { transports: ['websocket'] }),
@@ -37,19 +43,25 @@ export default {
     }
   },
   methods: {
-    sendMessage(name, img) {
+    // click event -> methods로 (computed -> x)
+    async sendMessage(name, email, idx) {
+      this.idx = idx;
       this.left_hide = true;
       this.right_hide = false;
-      this.$router.push({
-        name: 'Message',
-        params: {
-          id : name,
-          profile : img
-        }
-      })
       this.message = true;
-      this.user_name = name;
-      this.user_profile = img
+
+      const msg_ch = await axios.post('http://localhost:8000/msg_list', { my_idx : this.my_idx, idx : this.idx });
+      console.log(msg_ch)
+
+      // 같은함수든 뭐든 같은곳에 2개의 같은 변수이름만 없으면된다 다른곳에선 다 써도 중복안된단 -> 지역변수라
+      const user_name = await axios.post('http://localhost:8000/user_name', { email : email });
+      // this붙인건 vue에서 선언한 데이터, 안붙인건 변수같은거단 = 같아도 this만 잘 구분하면 상관없단
+      this.user_name = user_name.data;
+
+      // 처음부터 보여주는게 아닌 유저를 클릭한순간부터 보는거라 여기서부터 요청하면 된단
+      const msg_list = await axios.post('http://localhost:8000/select_msg', { idx : idx })
+      console.log(msg_list);
+      this.msg_list = msg_list.data;
     },
     closeMessage() {
       this.right_hide = true;
@@ -57,26 +69,24 @@ export default {
     },
     // message가 예약어라 안된거 같단 -> 오류메세지 잘읽어라 not a function -> 함수조차 생성이 안된거지 소켓문제가 아니단
     messageBtn() {
-      // message -> socket test
-      // const socket = io('http://localhost:5173', {
-      //   transports: ["websocket"],
-      //   // 이걸 설정하지 않으면 오류가 난다고 한다
-      //   withCredentials: true
-      // })
+      // socket
       // 서버로 데이터 보내기
-      this.socket.emit('chat', this.message_data)
-      this.message_data = '';
-      // 서버에서 보낸 데이터 받기
-      this.socket.on('chat', (data) => {
-        console.log(data)
+      this.socket.emit('chat', {
+        msg: this.message_data,
+        idx: this.idx
       })
+      this.message_data = '';
       
-      
-      // socket.emit("login", {
-      //   // name: "ungmo2",
-      //   msg: this.message_data
-      // });
+      // 서버에서 보낸 데이터 받기
+      this.socket.on('chat', async (data) => {
+        console.log(data)
 
+        // this에 담긴 text를 그대로 디비에 넣어서 보여질수도있진만 -> 소켓을 이용해 검색된 내용을 받을때마다 api요청하여 디비에 넣고 보여준다 -> (소켓사용 이유가 아직 명확하진 않지만 일단 처음이지 해보잔)
+        // + 수정 -> 소켓에서 보낸 데이터를 서버쪽에서 디비에 저장시키고 돌아올때 저장된걸 보여준단, 순간 보낸걸 받아서 다시 보내고 저장해서 이상했단
+        const send_msg = await axios.post('http://localhost:8000/select_msg', { idx: this.idx });
+        console.log(send_msg);
+        this.msg_list = send_msg.data;
+      })
 
     }
   },
@@ -88,7 +98,7 @@ export default {
       } else {
         this.send_ch = false;
       }
-    }
+    },
   },
   watch: {
     // computed -> watch 연결은 함수명을 같게해주면 된다, 데이터 선언한 이름과 같게해줘도 데이터의 실시간 체크도 할 수 있단, 첫번째 인자로 변경된 데이터가 할당되서 다른값에 재할당 하고싶으면 할 수 있단
@@ -97,15 +107,15 @@ export default {
       
     }
   },
-  mounted() {
+  async mounted() {
     if(this.$route.params.id) {
       this.message = true;
       this.user_name = this.$route.params.id
-      this.user_profile = this.$route.params.profile
-      // 여러개가 안나오는게 아니라 router는 주소에 담긴 동적주소만 새로고침해도 남아있는단 -> 일단 이미지도 주소로 넣고 나중에 수정하자(일단 보여야하닌깐)
-    
-      // 보통 본인꺼라 그냥 ()로 하는구난 -> 서버꺼 연동하기위해 하는줄 알았단 -> 블로그에선 서버꺼 넣던데?
     }
+    const res = await axios.post('http://localhost:8000/user', { email : this.email } );
+    console.log(res);
+    this.my_idx = res.data[0].idx;
+    this.user_list = res.data;
   }
 }
 </script>
@@ -127,18 +137,10 @@ export default {
         </div>
         <div class="__myMenu">
           <!-- my -->
-          <div class="__myInfos"  @click="sendMessage(name)">
+          <!-- 반복되는 유저마다 클릭시 메세지창으로 가야하니 v-for부분에 click이 맞단 -->
+          <div class="__myInfos"  @click="sendMessage(user.name, user.email, user.idx)" v-for="user in user_list" :key="user">
             <div class="__infoBox">
               <div class="__myImg"></div>
-              <div class="__myData">
-                <div class="__nickname">{{ name }}</div>
-                <div class="__name">message test (date)</div>
-              </div>
-            </div>
-          </div>
-          <div class="__myInfos" v-for="user in user_sample" :key="user" @click="sendMessage(user.name, user.profile)">
-            <div class="__infoBox">
-              <img :src="user.profile" class="__myImg" />
               <div class="__myData">
                 <div class="__nickname">{{ user.name }}</div>
                 <div class="__name">message test (date)</div>
@@ -171,7 +173,9 @@ export default {
           </div>
         </div>
         <div class="right__body">
-            d
+          <div class="" v-for="msg in msg_list" :key="msg">
+            <div>{{ msg.msg }}</div>
+          </div>
         </div>
         <div class="right__messageInput">
           <div class="__messageInput">
@@ -458,6 +462,7 @@ export default {
         min-width: 300px;
       }
       .right__messageBox {
+        max-width: 100%;
         .right__body {
           width: 100%;
           max-height: 790px;
