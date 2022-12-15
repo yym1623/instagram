@@ -14,6 +14,8 @@ export default {
       msg_list: [],
       idx: 0,
       my_idx: 0,
+      msg_ch: "",
+      socket_msg: "",
       // 주소는 server꺼를 넣는단
       // poling 오류가 걸린다 -> io 두번째 인자인 transports -> websocket으로 설정하니 해결했단
       socket: io('localhost:8000', { transports: ['websocket'] }),
@@ -50,17 +52,22 @@ export default {
       this.right_hide = false;
       this.message = true;
 
-      const msg_ch = await axios.post('http://localhost:8000/msg_list', { my_idx : this.my_idx, idx : this.idx });
-      console.log(msg_ch)
-
       // 같은함수든 뭐든 같은곳에 2개의 같은 변수이름만 없으면된다 다른곳에선 다 써도 중복안된단 -> 지역변수라
       const user_name = await axios.post('http://localhost:8000/user_name', { email : email });
       // this붙인건 vue에서 선언한 데이터, 안붙인건 변수같은거단 = 같아도 this만 잘 구분하면 상관없단
       this.user_name = user_name.data;
+      console.log(user_name)
+
+      const msg_ch = await axios.post('http://localhost:8000/msg_list', { my_idx : this.my_idx, idx : this.idx });
+      console.log(msg_ch)
+      this.msg_ch = msg_ch.data;
+      console.log('test')
+      console.log(this.msg_ch)
 
       // 처음부터 보여주는게 아닌 유저를 클릭한순간부터 보는거라 여기서부터 요청하면 된단
-      const msg_list = await axios.post('http://localhost:8000/select_msg', { idx : idx })
+      const msg_list = await axios.post('http://localhost:8000/select_msg', { idx : this.msg_ch })
       console.log(msg_list);
+      console.log('asd')
       this.msg_list = msg_list.data;
     },
     closeMessage() {
@@ -70,22 +77,25 @@ export default {
     // message가 예약어라 안된거 같단 -> 오류메세지 잘읽어라 not a function -> 함수조차 생성이 안된거지 소켓문제가 아니단
     messageBtn() {
       // socket
-      // 서버로 데이터 보내기
+      // 서버로 데이터 보내기 -> 메세지는 소켓으로 넘어간 백쪽에서 디비에 넣어준단 -> 여기서 db로 요청하는게 아니라
       this.socket.emit('chat', {
         msg: this.message_data,
-        idx: this.idx
+        idx: this.msg_ch,
+        my_idx: this.my_idx
       })
       this.message_data = '';
       
       // 서버에서 보낸 데이터 받기
       this.socket.on('chat', async (data) => {
         console.log(data)
-
+        console.log('메세지받긴')
+        // this.socket_msg = data.msg;
         // this에 담긴 text를 그대로 디비에 넣어서 보여질수도있진만 -> 소켓을 이용해 검색된 내용을 받을때마다 api요청하여 디비에 넣고 보여준다 -> (소켓사용 이유가 아직 명확하진 않지만 일단 처음이지 해보잔)
         // + 수정 -> 소켓에서 보낸 데이터를 서버쪽에서 디비에 저장시키고 돌아올때 저장된걸 보여준단, 순간 보낸걸 받아서 다시 보내고 저장해서 이상했단
-        const send_msg = await axios.post('http://localhost:8000/select_msg', { idx: this.idx });
-        console.log(send_msg);
+        const send_msg = await axios.post('http://localhost:8000/select_msg', { idx: this.msg_ch });
         this.msg_list = send_msg.data;
+
+        // this.msg_list = this.msg_list.concat(data.msg)
       })
 
     }
@@ -100,11 +110,21 @@ export default {
       }
     },
   },
+  directives() {
+
+  },
   watch: {
     // computed -> watch 연결은 함수명을 같게해주면 된다, 데이터 선언한 이름과 같게해줘도 데이터의 실시간 체크도 할 수 있단, 첫번째 인자로 변경된 데이터가 할당되서 다른값에 재할당 하고싶으면 할 수 있단
     // ex) ajax처럼 새로고침없이 현데이터만 실시간 변경해줄때 재할당 개념으로 watch로 ajax같은 효과를 낼 수 있단? -> watch에서 안되면 computed로 하고 watch에선 선언만한다 -> computed에서 한걸 실시간 변경 및 재할당은 watch에 computed에 생성한 값의 이름을 선언만 해줘도 동작한단
     send(e) {
       
+    },
+    msg_list(e) {
+      this.$nextTick(() => {
+        let messages = this.$refs.msg_list;
+
+        messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+      });
     }
   },
   async mounted() {
@@ -172,16 +192,16 @@ export default {
             <div class="__item"><i class="fa-solid fa-circle-info"></i></div>
           </div>
         </div>
-        <div class="right__body">
-          <div class="" v-for="msg in msg_list" :key="msg">
-            <div>{{ msg.msg }}</div>
+        <div ref="msg_list" class="right__body">
+          <div class="msg_box" :class="msg.my_id === my_idx ? 'right_msg' : 'left_msg'" v-for="msg in msg_list" :key="msg">
+            <span>{{ msg.msg }}</span>
           </div>
         </div>
         <div class="right__messageInput">
           <div class="__messageInput">
             <div class="__img f__img"><i class="fa-regular fa-face-smile"></i></div>
             <div class="__input">
-              <input type="text" placeholder="메시지 입력..." v-model="message_data">
+              <input type="text" placeholder="메시지 입력..." v-model="message_data" @keydown.enter="messageBtn()">
             </div>
             <div class="__imgBox" v-if="!send_ch">
               <div class="__img s__img"><i class="fa-regular fa-image"></i></div>
@@ -357,6 +377,7 @@ export default {
           display: flex;
           align-items: center;
           .close__message {
+            display: none;
             span {
               font-size: 27px;
               cursor: pointer;
@@ -383,6 +404,35 @@ export default {
         overflow: hidden auto;
         padding: 20px;
         box-sizing: border-box;
+        // position은 역시 딱딱한 맛이있단, flex나 margin을 쓰잔 -> 줄어들면서 자연스럽게 줄어드는 느낌이단 -> 포지션은 강제느낌
+        .msg_box.left_msg {
+          // 겹쳐진 아이템들이 display - flex로 바꾸니깐 잘나온단
+          display: flex;
+          padding: 10px 0;
+          box-sizing: border-box;
+          span {
+            border-radius: 30px;
+            padding: 15px;
+            background: transparent;
+            border: 1px solid #eee;
+            text-align: center;
+            box-sizing: border-box;
+          }
+        }
+        .msg_box.right_msg {
+          display: flex;
+          justify-content: flex-end;
+          padding: 10px 0;
+          box-sizing: border-box;
+          span {
+            // width가 해당 값만큼 안늘어나서 불편할땐 padding을 전체적으로주면 그만큼 가운데로 가게되니 편하단
+            border-radius: 30px;
+            padding: 15px;
+            background: #eee;
+            text-align: center;
+            box-sizing: border-box;
+          }
+        }
       }
       .right__messageInput {
         margin-top: auto;
@@ -502,6 +552,14 @@ export default {
           height: 100%;
           padding: 20px;
           box-sizing: border-box;
+        }
+        // 기본값으로 적어준 경로랑 같게해야 미디어쿼리가 동작한다 -> 바로 접근해도 처음 설정한 경로랑 다르면 설정이 안먹는단
+        .right__header {
+          .__userInfo {
+            .close__message {
+              display: block;
+            }
+          }
         }
       }
       .right__messageBox.right_hide {

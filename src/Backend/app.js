@@ -88,15 +88,16 @@ io.on('connection', function(socket) {
 	// on -> 받기 
   socket.on('chat', function(data) {
 		console.log(data);
+		
+		// 클라이언트에게 메시지 송신
+		io.emit('chat', data);
 
 
-		db.query(`INSERT INTO msg (msg, list_id) VALUE ('${data.msg}', '${data.idx}')  `, (err, row) => {
+		db.query(`INSERT INTO msg (msg, my_id, list_id) VALUE ('${data.msg}', '${data.my_idx}','${data.idx}')  `, (err, row) => {
 			if(err) console.error(err);
 			console.log(row);
 		})
-
-    // 클라이언트에게 메시지 송신
-    socket.emit('chat', data);
+		
 
   });
 
@@ -257,6 +258,7 @@ app.post('/user',(req, res) => {
 
 // 메세지 유저이름만 다시 요청
 app.post('/user_name',(req, res) => {
+	console.log(req.body)
 	// 특정 조건값을 기준으로 정렬하기 -> case
 	db.query(`SELECT * FROM user WHERE email = '${req.body.email}'`, (err, row) => {
 		if(err) console.error(err);
@@ -286,17 +288,32 @@ app.post('/msg_list',(req, res) => {
 		// 클라에서 전체조회로 클릭한거에 대한 id를 보내면 따로 조회를 할필욘 없어서 코드가 준단
 		// 조건마다 다르게 줄거면 달라지니깐 let으로 선언만한다 -> const는 변경이 안되니 선언만하면 오류걸린단
 		let idx;
+		let sec_idx;
 		if(req.body.my_idx === req.body.idx) {
-			idx = req.body.idx;
+			idx = req.body.my_idx;
 		} else {
 			idx = req.body.my_idx + ',' + req.body.idx;
 		}
+		// 숫자열은 안잡히고 문자열만 length로 잡히닌 length가 있는건 두명의 유저가 있다는 뜻 length로 조건을 건단
+		if(idx.length === undefined) {
+			// return
+		} else {
+			// 두명의 유저가 있는 문자열만 숫자만 뒤바꿔서 새로운 변수에 넣어서 총 3개의 변수를 비교한다
+			// sec_idx = idx.split().reverse().join();
+			sec_idx = idx.split(',').reverse().join();
+			console.log(sec_idx);
+
+		}
+		console.log('idx')
 		console.log(idx)
-		db.query(`SELECT * FROM msg_list WHERE msg_list = '${idx}'`, (err, row) => {
+		// 여기선 클라에서 받은 idx값으로 값이 있으면 냅두고 없으면 만든다
+		db.query(`SELECT * FROM msg_list WHERE msg_list = '${idx}' OR msg_list = '${sec_idx}'`, (err, row) => {
 			if(err) console.error(err);
 			// 보통 없으면 위에서 리턴으로 끝내고 있으면 내려가니 이렇게 순서를 맞춘단
+			console.log(row.length);
 			if(row.length !== 0) {
-				console.log('있음');
+				// 맞다면 여기서 무슨값을 보내서 한단?
+				res.json(row[0].msg_list)
 				return;
 			} else {
 				db.query(`INSERT INTO msg_list (msg_list) VALUE ('${idx}')`, (err, row) => {
@@ -309,7 +326,7 @@ app.post('/msg_list',(req, res) => {
 			if(err) console.error(err);
 			if(row.length !== 0) {
 				// 메세지 출력
-				res.json(row.msg);
+				// res.json(row.msg);
 			}
 		})
 })
@@ -324,10 +341,22 @@ app.post('/msg_list',(req, res) => {
 
 // 아이디에 맞는 글 조회하기
 app.post('/select_msg',(req, res) => {
-	db.query(`SELECT * FROM msg WHERE list_id = '${req.body.idx}'`, (err, row) => {
+	// 비교해줘야 한단 -> 위치 바꿔서 있으면 연동해준단
+	let idx = req.body.idx;
+	let sec_idx;
+	if(idx.length === undefined) {
+		// return
+	} else {
+		// 두명의 유저가 있는 문자열만 숫자만 뒤바꿔서 새로운 변수에 넣어서 총 3개의 변수를 비교한다
+		// sec_idx = idx.split().reverse().join();
+		sec_idx = idx.split(',').reverse().join();
+		console.log(sec_idx);
+	}
+	
+	db.query(`SELECT * FROM msg WHERE list_id = '${idx}' OR list_id = '${sec_idx}'`, (err, row) => {
 		if(err) console.error(err);
-		console.log(row);
-		res.json(row);
+		// console.log(row);
+		res.json(row)
 	})
 });
 
@@ -335,7 +364,7 @@ app.post('/select_msg',(req, res) => {
 // 본인글 조회
 app.post('/user_make_select',(req, res) => {
 	// 하나일땐 따로 변수만들어서 할 필요 없이 바로 넣잔
-	console.log(req.body.email)
+	// console.log(req.body.email)
 	db.query(`SELECT * FROM make WHERE email = '${req.body.email}'`, (err, row) => {
 		if(err) console.error(err);
 		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
