@@ -75,7 +75,7 @@ export default {
       this.left_hide = false;
     },
     // message가 예약어라 안된거 같단 -> 오류메세지 잘읽어라 not a function -> 함수조차 생성이 안된거지 소켓문제가 아니단
-    messageBtn() {
+    async messageBtn() {
       // socket
       // 서버로 데이터 보내기 -> 메세지는 소켓으로 넘어간 백쪽에서 디비에 넣어준단 -> 여기서 db로 요청하는게 아니라
       this.socket.emit('chat', {
@@ -86,9 +86,10 @@ export default {
       this.message_data = '';
       
       // 서버에서 보낸 데이터 받기
-      this.socket.on('chat', async (data) => {
+      await this.socket.on('test', async (data) => {
         console.log(data)
-        console.log('메세지받긴')
+        console.log('`````````')
+        // console.log('메세지받긴')
         // this.socket_msg = data.msg;
         // this에 담긴 text를 그대로 디비에 넣어서 보여질수도있진만 -> 소켓을 이용해 검색된 내용을 받을때마다 api요청하여 디비에 넣고 보여준다 -> (소켓사용 이유가 아직 명확하진 않지만 일단 처음이지 해보잔)
         // + 수정 -> 소켓에서 보낸 데이터를 서버쪽에서 디비에 저장시키고 돌아올때 저장된걸 보여준단, 순간 보낸걸 받아서 다시 보내고 저장해서 이상했단

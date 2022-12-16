@@ -86,17 +86,35 @@ io.on('connection', function(socket) {
 	// 받고 보낼때 첫번쨰 인자 클라랑 맞춰주기
 	// emit -> 보내기
 	// on -> 받기 
+	// to - 룸만들기
+	// join - 룸에 연결
+	// leave - 룸에서 나가기
+	// room 조건으로 있는지 확인 등등 manager.rooms로 확인한다 -> to()로 확인하는게 아니라 이렇게 io 메소드가 많다 찾아보기
+
+	// console.log(socket.manager.rooms)
+	// console.log("-------------------------");
+  // let rooms = io.sockets.manager.rooms;
+	// console.log(rooms);
+	
+	// 조건으로 해당 룸 없으면 만들어서 해당 룸에서 각자 방끼리만 통신하게 하기 -> 하나로하면 여러방 비교도안되고 그렇다고 io로보내면 전체로 보내진단 3개방이면 3개의 똑같이간다
+	// console.log(socket.to(data.idx));
+	// if(socket.to(data.idx) === undefined) {
+	// 	console.log("없음")
+	// } else {
+	// 	console.log("있음")
+	// }
   socket.on('chat', function(data) {
-		console.log(data);
+		socket.join(data.idx)
+		// io로 묶어야하나보다 -> 그게 맞긴하넨 -> 전체에서 룸을 만들어서 그 안에서 socket으로 하는거다
+		io.to(data.idx).emit('test', data)
 		
-		// 클라이언트에게 메시지 송신
-		io.emit('chat', data);
-
-
 		db.query(`INSERT INTO msg (msg, my_id, list_id) VALUE ('${data.msg}', '${data.my_idx}','${data.idx}')  `, (err, row) => {
 			if(err) console.error(err);
 			console.log(row);
 		})
+		console.log(data);
+		// 클라이언트에게 메시지 송신
+		// io.emit('chat', data);
 		
 
   });
@@ -343,17 +361,25 @@ app.post('/msg_list',(req, res) => {
 app.post('/select_msg',(req, res) => {
 	// 비교해줘야 한단 -> 위치 바꿔서 있으면 연동해준단
 	let idx = req.body.idx;
-	let sec_idx;
-	if(idx.length === undefined) {
-		// return
-	} else {
-		// 두명의 유저가 있는 문자열만 숫자만 뒤바꿔서 새로운 변수에 넣어서 총 3개의 변수를 비교한다
-		// sec_idx = idx.split().reverse().join();
-		sec_idx = idx.split(',').reverse().join();
-		console.log(sec_idx);
-	}
+	console.log('=----')
+	console.log(req.body)
+	// let sec_idx;
+	// console.log('----------여기임')
+	// console.log(typeof idx)
+	// console.log(.length)
+	// if(idx.length === undefined) {
+	// 	// return
+	// } else {
+	// 	// 두명의 유저가 있는 문자열만 숫자만 뒤바꿔서 새로운 변수에 넣어서 총 3개의 변수를 비교한다
+	// 	// sec_idx = idx.split().reverse().join();
+	// 	sec_idx = idx.split(',').reverse().join();
+	// }
+
+	// console.log('----------여기임')
+	// console.log(idx)
+	// console.log(sec_idx)
 	
-	db.query(`SELECT * FROM msg WHERE list_id = '${idx}' OR list_id = '${sec_idx}'`, (err, row) => {
+	db.query(`SELECT * FROM msg WHERE list_id = '${idx}'`, (err, row) => {
 		if(err) console.error(err);
 		// console.log(row);
 		res.json(row)
@@ -437,6 +463,6 @@ app.post('/make', upload.single('myfile'), function (req, res, next) {
 	})
 })
 
-// socekt 때매 변경해서 사용해보긴 -> http server 설정한걸로 사용해야한다
+// socekt 때매 변경해서 사용해보긴 -> http server 설정한걸로 사용해야한다 -> 웹 소켓 프로토콜로 변경한단
 server.listen(port, () => console.log('localhost:8000'));
 // app.listen(port, () => console.log('localhost:8000'));
