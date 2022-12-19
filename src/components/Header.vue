@@ -1,6 +1,21 @@
 <script>
+import { Navigation, Pagination, Scrollbar } from 'swiper'
+import { Swiper, SwiperSlide } from 'swiper/vue'
 import axios from 'axios'
+
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 export default {
+  components: {
+    Swiper,
+    SwiperSlide,
+  },
+  setup() {
+    return {
+      modules: [ Navigation, Pagination, Scrollbar ]
+    }
+  },
   data() {
     return {
       display: 0,
@@ -133,8 +148,10 @@ export default {
     upload(e) {
       const files = e;
       // 함수가 다르면서 함수에다 함수를 연속 실행할 수 없는 경우엔 평범하게 데이터선언해서 값을준다음 넘겨서 재사용하면 된단
-      this.files = files[0];
-      this.files_name = files[0].name;
+      // this.files_name = files.name;
+      // 현 페이지에서 file -> src변환 작업을 위해 실행하는 함수 -> 파일정보 자첸 업로드된시점의 event객체에서 바로 사용하면 된단
+      this.files = files;
+      console.log(this.files)
       this.addFiles(files)
       // 데이터 선언해서 this로 넣고 사용해도 상관없지만 잠깐 사용하고 하는거면 해당 함수에 변수사용해서 하는거도 괜찮단
       // let droppedFiles = e.dataTransfer.files;
@@ -559,7 +576,7 @@ export default {
           <div class="__item">
             <!-- label이 margin이 안먹히므로 부모로 감싸서 부모로 내려준단 -->
             <label class="__item __btn" for="file">컴퓨터에서 선택</label>
-            <input class="__changeBtn" id="file" type="file" name="myfile" @change="upload($event.target.files)" />
+            <input class="__changeBtn" id="file" type="file" name="myfile" multiple @change="upload($event.target.files)" />
           </div>
         </div>
       </div>
@@ -570,9 +587,13 @@ export default {
         </div>
       </div>
       <div class="make__body" v-else>
-        <div class="make__data" v-for="make in fileList" :key="make">
-          <img :src="make.src" />
-        </div>
+        <swiper class="swiper make__data swiper-container" :slides-per-view="1" :space-between="20" :modules="modules" navigation>
+          <div class="swiper-wrapper">
+            <swiper-slide v-for="make in fileList" :key="make">
+              <img :src="make.src" />
+            </swiper-slide>
+          </div>
+        </swiper>
         <div class="make__info">
           <div class="info__data">
             <div class="__img"></div>

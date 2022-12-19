@@ -24,6 +24,7 @@ export default {
       nickname: this.$cookies.get('nickname'),
       name: this.$cookies.get('name'),
       user_list: [],
+      users_list: [],
       
       user_sample: [
         {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
@@ -45,12 +46,11 @@ export default {
     }
   },
   methods: {
-    myPage(nickname, name) {
+    myPage(name) {
       this.$router.push({
         name: 'User',
         params: {
-          id : nickname,
-          name : name
+          id : name
         }
       })
       // this.$router.go();
@@ -61,9 +61,13 @@ export default {
       // 게시물 전체 조회
       const res = await axios.get('http://localhost:8000/make_select');
       console.log(res);
-      // const a = URL.createObjectURL(res.data[0].img.data);
-      // console.log(a)
       this.user_list = res.data;
+
+      // 유저 전체 조회
+      const user = await axios.post('http://localhost:8000/select', { name : this.name });
+      console.log(user);
+      this.users_list = user.data;
+      console.log(this.users_list);
     } catch(e) {
       console.log(e)
     }
@@ -80,15 +84,16 @@ export default {
         <div class="left__list">
           <!-- 스토리 -->
           <div class="__store">
-            <swiper class="swiper swiper-container" :slides-per-view="6" :space-between="20" :modules="modules" navigation>
+            <swiper class="swiper swiper-container" :slides-per-view="3" :space-between="20" :modules="modules" navigation>
               <div class="swiper-wrapper">
                 <!-- 본인 -->
                 <swiper-slide class="swiper__item">
                   <div class="__img" ></div>
                   <div class="__nickname">{{ nickname }}</div>
                 </swiper-slide>
-                <swiper-slide class="swiper__item" v-for="user in user_sample" :key="user">
-                  <img :src="user.profile" class="__img" />
+                <swiper-slide class="swiper__item" v-for="user in users_list" :key="user">
+                  <!-- <img :src="user.profile" class="__img" /> -->
+                  <div :src="user.profile" class="__img" ></div>
                   <div class="__nickname">{{ user.nickname }}</div>
                 </swiper-slide>
               </div>
@@ -110,7 +115,13 @@ export default {
               </div>
             </div>
             <div class="board__body">
-              <img class="body__img" :src="user.img">
+              <swiper class="swiper swiper-container" :slides-per-view="1" :space-between="20" :modules="modules" navigation>
+                <div class="swiper-wrapper">
+                  <swiper-slide>
+                    <img class="body__img" :src="user.img" />
+                  </swiper-slide>
+                </div>
+              </swiper>
             </div>
             <div class="board__content">
               <div class="content__comu">
@@ -151,7 +162,7 @@ export default {
         <div class="right__list">
           <div class="__myInfo">
             <div class="__infoBox">
-              <div class="__myImg" @click="myPage(nickname, name)"></div>
+              <div class="__myImg" @click="myPage(name)"></div>
               <div class="__myData">
                 <div class="__nickname">{{ nickname }}</div>
                 <div class="__name">{{ name }}</div>
@@ -166,8 +177,9 @@ export default {
             </div>
             <div class="__sugList">
               <!-- 5개 테스트 -->
-              <div class="__item"  v-for="user in user_sample.slice(10)" :key="user">
-                <img :src="user.profile" class="__myImg" @click="myPage(user.nickname, user.name)" />
+              <div class="__item"  v-for="user in users_list" :key="user">
+                <!-- <img :src="user.profile" class="__myImg" @click="myPage(user.nickname, user.name)" /> -->
+                <div :src="user.profile" class="__myImg" @click="myPage(user.name)" ></div>
                 <div class="__myData">
                   <div class="__nickname">{{ user.nickname }}</div>
                   <div class="__name">{{ user.name }}</div>
@@ -224,6 +236,8 @@ export default {
           justify-content: center;
           align-items: center;
           .swiper {
+            // max-width: 100%;
+            // width: 100%;
             .swiper__item {
               cursor: pointer;
               .__img {
@@ -234,6 +248,7 @@ export default {
                 width: 56px;
                 height: 56px ;
                 border-radius: 50%;
+                margin: auto;
               }
               .__nickname {
                 font-size: 12px;

@@ -83,6 +83,7 @@ app.use(session({
 // io -> 전체
 // io.on -> 전체에 대하여 connection을 걸어선 그 안에서 socket으로 해당 클라이언트끼리만 각각 사용한단
 io.on('connection', function(socket) {
+	// console.log(req.body)
 	// 받고 보낼때 첫번쨰 인자 클라랑 맞춰주기
 	// emit -> 보내기
 	// on -> 받기 
@@ -357,6 +358,25 @@ app.post('/msg_list',(req, res) => {
 // 	})
 // });
 
+// 유저 조회하기 -> 본인꺼는 조건으로 제외한다
+app.post('/select', (req, res) => {
+	db.query(`SELECT * FROM user WHERE name not in('${req.body.name}')`, (err, row) => {
+		if(err) console.error(err);
+		console.log(row);
+		res.json(row)
+	})
+})
+
+// 유저 조회 -> 본인꺼만
+app.post('/user_select', (req, res) => {
+	db.query(`SELECT * FROM user WHERE name = '${req.body.name}'`, (err, row) => {
+		if(err) console.error(err);
+		console.log(row);
+		res.json(row)
+	})
+})
+
+
 // 아이디에 맞는 글 조회하기
 app.post('/select_msg',(req, res) => {
 	// 비교해줘야 한단 -> 위치 바꿔서 있으면 연동해준단
@@ -390,8 +410,7 @@ app.post('/select_msg',(req, res) => {
 // 본인글 조회
 app.post('/user_make_select',(req, res) => {
 	// 하나일땐 따로 변수만들어서 할 필요 없이 바로 넣잔
-	// console.log(req.body.email)
-	db.query(`SELECT * FROM make WHERE email = '${req.body.email}'`, (err, row) => {
+	db.query(`SELECT * FROM make WHERE name = '${req.body.name}'`, (err, row) => {
 		if(err) console.error(err);
 		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
 		res.json(row)
@@ -417,15 +436,17 @@ const storage = multer.diskStorage({
   }
 })
 
+// multer같은 express 라이브러리는 app.post 두번째 인자에 붙여서 사용할 수 있단
 const upload = multer({ storage: storage })
-app.post('/make', upload.single('myfile'), function (req, res, next) {
-	// console.log(req.file)
-	// console.log(req.body)
-
+app.post('/make', upload.array('myfile'), function (req, res, next) {
+	// single - file
+	// array - files
+	console.log(req.files)
+	
 	// path가 /가 끊겨나오는 이유로 합쳐준단
 	// 매칭시키잔 디비 + 저장이미지 -> 파일명이 변해도 이미지 데이터 자체가 저장되는거라 매칭만해주면 불러와진단
 	// 이미지데이터 자체를 저장 -> url주소가 아니라 내 pc에 저장되면서 불러오는거단, url주소로저장 등등 ㄴㄴ
-	const img =	"/public/uploads/" + req.file.filename;
+	// const img =	"/public/uploads/" + req.file.filename;
 
 	const userInfo = {
 		'email': req.body.email,
@@ -449,18 +470,18 @@ app.post('/make', upload.single('myfile'), function (req, res, next) {
 	const dateString = year + '-' + month  + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
 
 	// 유효성 검사 - 중복이메일 검사
-	db.query(`SELECT * FROM user WHERE email = '${userInfo.email}'  `, (err, row) => {
-		// write같은 예약어는 사용하면 오류 걸리는거 같다 ``를 붙이지 않는이상 다른걸 쓰잔
-		const sql = `INSERT INTO make (date, email, name, nickname, img, make_write, user_id) VALUES ('${dateString}', '${userInfo.email}', '${userInfo.name}', '${userInfo.nickname}', '${img}', '${userInfo.write}', '${row[0].idx}')`; 
-		db.query(sql, (err, row) => {
-			if(err) console.error(err);
-			// res.send(row)
-			res.json({
-				success: true,
-				message: '업로드완료',
-			})
-		})
-	})
+	// db.query(`SELECT * FROM user WHERE email = '${userInfo.email}'  `, (err, row) => {
+	// 	// write같은 예약어는 사용하면 오류 걸리는거 같다 ``를 붙이지 않는이상 다른걸 쓰잔
+	// 	const sql = `INSERT INTO make (date, email, name, nickname, img, make_write, user_id) VALUES ('${dateString}', '${userInfo.email}', '${userInfo.name}', '${userInfo.nickname}', '${img}', '${userInfo.write}', '${row[0].idx}')`; 
+	// 	db.query(sql, (err, row) => {
+	// 		if(err) console.error(err);
+	// 		// res.send(row)
+	// 		res.json({
+	// 			success: true,
+	// 			message: '업로드완료',
+	// 		})
+	// 	})
+	// })
 })
 
 // socekt 때매 변경해서 사용해보긴 -> http server 설정한걸로 사용해야한다 -> 웹 소켓 프로토콜로 변경한단

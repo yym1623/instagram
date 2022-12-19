@@ -19,9 +19,10 @@ export default {
   },
   data() {
     return {
-      nickname: this.$route.params.id,
-      name: this.$route.params.name,
-    
+      name: this.$route.params.id,
+
+      user: {},
+
       boar_ch: true,
       play_ch: false,
       save_ch: false,
@@ -66,14 +67,25 @@ export default {
     }
   },
   async mounted() {
-    const email = this.$cookies.get('email');
+    console.log(this.name);
+    const email = this.$route.params.email;
+
+    const user = await axios({
+      url: 'http://localhost:8000/user_select',
+      method: 'POST',
+      data: { name : this.name }
+    })
+    console.log(user);
+    this.user = user.data[0];
+    // this.user_list = res.data;    
 
     // 주소안에 변수넣을게 아니라면 ``말고 ''로 쓰잔
     // aixos.post로 줄여서 두번째인자로 데이터주니깐 데이터가 안온다 객체로 data로 주니깐 간다 -> 대체모냔 -> 알아보잔axioss
+    // this로 data에 바로 넣으면은 test1 : ''로 들어간단 key value가 똑같이 가는줄 알았는데 하나로 넣으면 -> 그럼 객체로 그냥 name : this.name 이런식으로 보내잔
     const res = await axios({
       url: 'http://localhost:8000/user_make_select',
       method: 'POST',
-      data: { email }
+      data: { name : this.name }
     })
     console.log(res);
     this.user_list = res.data;
@@ -90,7 +102,7 @@ export default {
         </div>
         <div class="__userInfo">
           <div class="__info">
-            <div class="__nickname">{{ nickname }}</div>
+            <div class="__nickname">{{ user.nickname }}</div>
             <button class="__change">프로필 편집</button>
             <div class="__setting" @click="settingBtn()"><i class="fa-solid fa-gear"></i></div>
           </div>
@@ -115,7 +127,7 @@ export default {
             <div class="bf myN">팔로워</div>
             <div class="bfw myN">팔로우</div>
           </div>
-          <div class="__name">{{ name }}</div>
+          <div class="__name">{{ user.name }}</div>
         </div>
       </div>
       <div class="__highright">
@@ -263,6 +275,19 @@ export default {
         }
         .setting.setting_ch {
           display: block;
+          animation: fadeInUp 1s;
+          @keyframes fadeInUp {
+            0% {
+              opacity: 0;
+              // translate(x, y)
+              transform: translate(-50%, -45%);
+  
+            }
+            100% {
+              opacity: 1;
+              transform: translate(-50%, -50%);
+            }
+          }
         }
         .__data {
           margin-top: 30px;
