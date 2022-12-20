@@ -68,7 +68,6 @@ export default {
   },
   async mounted() {
     console.log(this.name);
-    const email = this.$route.params.email;
 
     const user = await axios({
       url: 'http://localhost:8000/user_select',
@@ -76,6 +75,7 @@ export default {
       data: { name : this.name }
     })
     console.log(user);
+    console.log('``````')
     this.user = user.data[0];
     // this.user_list = res.data;    
 
@@ -171,7 +171,7 @@ export default {
           <!-- test (9) -->
           <!-- v-for 반복문키는 아이템 전체를 줘도되지만 아이템안에 이름으로 구별해줘도 좋단 -->
           <div class="__item" v-for="user_item in user_list" :key="user_item">
-            <img :src="user_item.img" alt="">
+            <img :src="user_item.img.split(',')[0]" alt="">
           </div>
         </div>
       </div>
@@ -400,7 +400,7 @@ export default {
           cursor: pointer;
           img {
             width: 100%;
-            // height: 100%;
+            height: 100%;
           }
         }
       }
@@ -477,6 +477,9 @@ export default {
             .__setting {
               display: none;
             }
+          }
+          .setting.setting_ch {
+            display: none;
           }
           .__name {
             display: none;

@@ -44,7 +44,7 @@ export default {
             this.error_id = true;
           } else {
             // 회원가입성공 -> 로그인페이지로 이동
-            this.$router.push('/')
+            this.$router.push('/login')
           }
           this.singUp = true;
 

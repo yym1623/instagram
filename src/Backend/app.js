@@ -432,21 +432,16 @@ const storage = multer.diskStorage({
     cb(null, 'public/uploads/')
   },
   filename: function (req, file, cb) {
-    cb(null, v4() + "_" + file.filename + '.png')
+		// 여기에선의 file저장한 값이 아래의 files의 filename으로 똑같이 들어온다 -> 맞춰주면된단
+    cb(null, v4() + '.png')
   }
 })
 
 // multer같은 express 라이브러리는 app.post 두번째 인자에 붙여서 사용할 수 있단
+// single - file
+// array - files
 const upload = multer({ storage: storage })
 app.post('/make', upload.array('myfile'), function (req, res, next) {
-	// single - file
-	// array - files
-	console.log(req.files)
-	
-	// path가 /가 끊겨나오는 이유로 합쳐준단
-	// 매칭시키잔 디비 + 저장이미지 -> 파일명이 변해도 이미지 데이터 자체가 저장되는거라 매칭만해주면 불러와진단
-	// 이미지데이터 자체를 저장 -> url주소가 아니라 내 pc에 저장되면서 불러오는거단, url주소로저장 등등 ㄴㄴ
-	// const img =	"/public/uploads/" + req.file.filename;
 
 	const userInfo = {
 		'email': req.body.email,
@@ -469,19 +464,33 @@ app.post('/make', upload.array('myfile'), function (req, res, next) {
 
 	const dateString = year + '-' + month  + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
 
-	// 유효성 검사 - 중복이메일 검사
-	// db.query(`SELECT * FROM user WHERE email = '${userInfo.email}'  `, (err, row) => {
-	// 	// write같은 예약어는 사용하면 오류 걸리는거 같다 ``를 붙이지 않는이상 다른걸 쓰잔
-	// 	const sql = `INSERT INTO make (date, email, name, nickname, img, make_write, user_id) VALUES ('${dateString}', '${userInfo.email}', '${userInfo.name}', '${userInfo.nickname}', '${img}', '${userInfo.write}', '${row[0].idx}')`; 
-	// 	db.query(sql, (err, row) => {
-	// 		if(err) console.error(err);
-	// 		// res.send(row)
-	// 		res.json({
-	// 			success: true,
-	// 			message: '업로드완료',
-	// 		})
-	// 	})
-	// })
+	// 조건마다 배열, 문자열 다르단면 -> 조건안에 쓰인 변수는 밖에서 사용을 못하니(지역변수 - 함수만 그런줄, 조건문도 똑같다), 조건문밖에서 다르게해야하니 let로 하나로 한다음 조건마다 스트링이면 바로 할당, 배열이면 해당 변수를 배열로 조건에서 다시 선언후 변경한 후 밖에서 사용하면 된단 
+	let img;
+	const img_cnt = req.files.length;
+	if(req.files.length === 1) {
+		// 하나일때도 배열에 담기니깐 -> 하나니깐 [0]으로 접근해서 하자 -> 어차피 이거[0] 하나밖에 없다 -> 하나일땐 스트링으로 보내는법은 없는건간?
+		img =	"/public/uploads/" + req.files[0].filename;
+	} else {
+		// 여러개 - 객체로 ,로 구분해서 저장? -> 일단은?
+		img =	[];
+		req.files.forEach((imgs) => {
+			img.push("/public/uploads/" + imgs.filename)
+		})
+	}
+	console.log(img)
+
+	db.query(`SELECT * FROM user WHERE email = '${userInfo.email}'  `, (err, row) => {
+		// write같은 예약어는 사용하면 오류 걸리는거 같다 ``를 붙이지 않는이상 다른걸 쓰잔
+		const sql = `INSERT INTO make (date, email, name, nickname, img, img_cnt, make_write, user_id) VALUES ('${dateString}', '${userInfo.email}', '${userInfo.name}', '${userInfo.nickname}', '${img}', '${img_cnt}', '${userInfo.write}', '${row[0].idx}')`; 
+		db.query(sql, (err, row) => {
+			if(err) console.error(err);
+			// res.send(row)
+			res.json({
+				success: true,
+				message: '업로드완료',
+			})
+		})
+	})
 })
 
 // socekt 때매 변경해서 사용해보긴 -> http server 설정한걸로 사용해야한다 -> 웹 소켓 프로토콜로 변경한단

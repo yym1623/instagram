@@ -3,6 +3,9 @@ import { Navigation, Pagination, Scrollbar } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import axios from 'axios'
 
+// components
+import MakeUser from './Make_user.vue';
+
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
@@ -12,6 +15,7 @@ export default {
   components: {
     Swiper,
     SwiperSlide,
+    MakeUser
   },
   // setup() -> 처음 접속시의 라이프사이클인 mounted()같은거인거 같다
   setup() {
@@ -25,28 +29,14 @@ export default {
       name: this.$cookies.get('name'),
       user_list: [],
       users_list: [],
-      
-      user_sample: [
-        {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
-        {"name":"lwickendon1","nickname":"Lilas","profile":"https://sungyesa.com/new/data/file/free/3699079233_vdoEG2zY_2523666B-52A6-4DD7-B32F-0C6D8FDE8D1F.jpeg"},
-        {"name":"tcotillard2","nickname":"Tiebold","profile":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5fx7465mV30augpIMD5pFNa2BWLNXWrp4uA&usqp=CAU"},
-        {"name":"cchsteney3","nickname":"Cordelia","profile":"https://images-kr.girlstyle.com/wp-content/uploads/2018/11/0000223371_001_20180810115738536.jpg"},
-        {"name":"jblakesley4","nickname":"Joscelin","profile":"https://img.hankyung.com/photo/201811/01.18271154.1.jpg"},
-        {"name":"rkirdsch5","nickname":"Robin","profile":"https://cdn.bokjitimes.com/news/photo/202002/22767_15736_3416.jpg"},
-        {"name":"mcaillou6","nickname":"Merrilee","profile":"https://cdnweb01.wikitree.co.kr/webdata/editor/202203/09/img_20220309153631_bc511c9b.webp"},
-        {"name":"slascell7","nickname":"Shelli","profile":"https://post-phinf.pstatic.net/MjAyMDEwMDhfMjU2/MDAxNjAyMTIzNjM5ODg1.jNBL7Kroe6kBSd8iL0D9gM4V516CBXZnUHFb-TBxIyIg.F1uXH4b7WuibteVcCmG-vZLniM5DrJzs2OCkqztuZnog.JPEG/%EA%B2%A8%EC%9A%B8_%EB%A9%94%EC%9D%B8%EC%BB%B7.jpg?type=w1200"},
-        {"name":"dsedcole8","nickname":"Duffie","profile":"https://img9.yna.co.kr/photo/cms/2019/02/01/81/PCM20190201000081005_P2.jpg"},
-        {"name":"rgranger9","nickname":"Reginauld","profile":"http://image.newsis.com/2022/10/31/NISI20221031_0001117996_web.jpg"},
-        {"name":"irodbournea","nickname":"Isahella","profile":"https://images.chosun.com/resizer/C6ad4fbBBVwyUdn6ziRBR_VEkL8=/616x0/smart/cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/2R24FEZO6VFKNHJKND4FGETXVY.JPG"},
-        {"name":"alamberteschib","nickname":"Auguste","profile":"http://dummyimage.com/118x100.png/ff4444/ffffff"},
-        {"name":"glubeckc","nickname":"Garrick","profile":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT05FKRbwYdbvIz_7q6yf_3Oevdk6NIoPIFrA&usqp=CAU"},
-        {"name":"wrannsd","nickname":"Waldo","profile":"https://newsimg-hams.hankookilbo.com/2022/10/06/c041ec67-565b-459d-a8e9-bb8e6a2e33b2.jpg"},
-        {"name":"cbiaggellie","nickname":"Cristiano","profile":"https://img.etoday.co.kr/pto_db/2020/06/20200621122424_1474938_466_568.jpg"}
-      ]
+
+      upload_ch: false,
+      comment: "",
     }
   },
   methods: {
     myPage(name) {
+      console.log(name)
       this.$router.push({
         name: 'User',
         params: {
@@ -64,10 +54,14 @@ export default {
       this.user_list = res.data;
 
       // 유저 전체 조회
+      // console.log에서도 없는값을 조회할려하면 오류걸리면서 그 아래 코드는 실행안되고 멈추는 현상이 발생한단
       const user = await axios.post('http://localhost:8000/select', { name : this.name });
       console.log(user);
       this.users_list = user.data;
       console.log(this.users_list);
+      // console.log(JSON.parse(user.data[0].img));
+      // console.log(user.data[0]);
+      // console.log(user.data[0].img.split(','));
     } catch(e) {
       console.log(e)
     }
@@ -84,8 +78,11 @@ export default {
         <div class="left__list">
           <!-- 스토리 -->
           <div class="__store">
-            <swiper class="swiper swiper-container" :slides-per-view="3" :space-between="20" :modules="modules" navigation>
-              <div class="swiper-wrapper">
+            <!-- 모바일에선 5개만 나오도록하면 display.가 맞는단 -->
+            <swiper class="swiper swiper-container" :slides-per-view="6" :space-between="20" :modules="modules" navigation>
+              <!-- swiper 자체에 걸린 wrapper로 인해 스타일이 이상해지므로 이건 일단 뺸단 -->
+              <!-- <div class="swiper-wrapper"> -->
+                <!-- wraapr는 여러개일때 -> 넘겨야할때 써야한단 -> 일자로 있는거에다가 쓰면 넘어가지는걸로 써져서 이미지가 꺠진다 -> 즉 swiper 자체적인 스타일인 wrapper는 여러개로 넘어가질때만 사용하고 하나로 나와지는건(안넘어가는거) 쓰지말잔 -> 스타일부분도 여러개일때 넘기는건데도 warper가 필요없다? -> 상황에 맞게 사용하잔 -->
                 <!-- 본인 -->
                 <swiper-slide class="swiper__item">
                   <div class="__img" ></div>
@@ -96,59 +93,13 @@ export default {
                   <div :src="user.profile" class="__img" ></div>
                   <div class="__nickname">{{ user.nickname }}</div>
                 </swiper-slide>
-              </div>
+              <!-- </div> -->
             </swiper>
           </div>
           <!-- 게시글 -->
           <!-- 반복문은 반복 개수만큼 반복문건 요소가 복사된다 (ex 리스트가 3개면 요소도 3개가 된다) -->
-          <div class="__board" v-for="user in user_list" :key="user">
-            <div class="board__title">
-              <div class="__myInfo">
-                <div class="__infoBox">
-                  <div class="__myImg"></div>
-                  <div class="__myData">
-                    <div class="__nickname">{{ user.nickname }}</div>
-                    <div class="__name">{{ user.name }}</div>
-                  </div>
-                </div>
-                <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
-              </div>
-            </div>
-            <div class="board__body">
-              <swiper class="swiper swiper-container" :slides-per-view="1" :space-between="20" :modules="modules" navigation>
-                <div class="swiper-wrapper">
-                  <swiper-slide>
-                    <img class="body__img" :src="user.img" />
-                  </swiper-slide>
-                </div>
-              </swiper>
-            </div>
-            <div class="board__content">
-              <div class="content__comu">
-                <div class="__icons __heart"><i class="fa-regular fa-heart"></i></div>
-                <div class="__icons __comment"><i class="fa-regular fa-comment"></i></div>
-                <div class="__icons __message"><i class="fa-regular fa-paper-plane"></i></div>
-                <div class="__icons __save"><i class="fa-regular fa-bookmark"></i></div>
-              </div>
-              <!-- <div class="comment__heart">
-                <div class="heart__img"></div>
-                <div class="heart__text">test님이 좋아합니다</div>
-              </div> -->
-              <div class="comment__info">
-                <!-- 띄어쓰기 한번은 띄어지니깐 한번으로 충분하면 직접 띄어쓰기로하고 더 많이 필요하면 margin같은걸 넣잔 -->
-                <!-- 데이터 하나하나보단 (둘 중 하나만 없어서 보여주면 안된다면 -> 요소 자체에 조건건단) -->
-                <div class="info__title" v-if="user.make_write !== ''">{{ user.nickname }} <span>{{ user.make_write }}</span></div>
-              </div>
-              <div class="comment__date">
-                <div class="date__title">1일 전</div>
-              </div>
-              <div class="comment__text">
-                <div class="__icon"><i class="fa-regular fa-face-smile"></i></div>
-                <div class="__text"><input type="text" placeholder="댓글 달기..." /></div>
-                <div class="__uploadBtn">게시</div>
-              </div>
-            </div>
-          </div>
+          <MakeUser class="__board" v-bind:user_list="user_list">
+          </MakeUser>
           <!-- 끝난 지점엔 항상 체크표시가 나오게 아이템 하나 추가 -->
           <div class="__board __check">
             <div class="__success">
@@ -176,8 +127,8 @@ export default {
               <div class="__search">모두보기</div>
             </div>
             <div class="__sugList">
-              <!-- 5개 테스트 -->
-              <div class="__item"  v-for="user in users_list" :key="user">
+              <!-- 5개만 가져오기 -> 전체누르면 전체창에서 전체 나오게하긴 -->
+              <div class="__item"  v-for="user in users_list.slice(0,5)" :key="user">
                 <!-- <img :src="user.profile" class="__myImg" @click="myPage(user.nickname, user.name)" /> -->
                 <div :src="user.profile" class="__myImg" @click="myPage(user.name)" ></div>
                 <div class="__myData">
@@ -236,8 +187,7 @@ export default {
           justify-content: center;
           align-items: center;
           .swiper {
-            // max-width: 100%;
-            // width: 100%;
+            width: 100%;
             .swiper__item {
               cursor: pointer;
               .__img {
@@ -248,7 +198,7 @@ export default {
                 width: 56px;
                 height: 56px ;
                 border-radius: 50%;
-                margin: auto;
+                // margin: auto;
               }
               .__nickname {
                 font-size: 12px;
@@ -343,11 +293,20 @@ export default {
           }
           .board__body {
             max-height: 590px;
+            height:100%;
             // 사진이 디스플레이 맞게 height widthg 줄어든단 ->부모 자식 100프로맞춘다 부모는 min걸면 그만큼까지 줄어드니깐 참곤
             // min-height: 275px;
             // height: 100%;
-            .body__img {
-              width: 100%;
+            .swiper {
+              height: auto;
+              .swiper-slide {
+                // height : 100%하면 안늘어나고 auto하니깐 늘어난단 -> 차이 기억하기
+                height: auto;
+                .body__img {
+                  width: 100%;
+                  height: 100%;
+                }
+              }
             }
           }
           .board__content {
@@ -430,9 +389,19 @@ export default {
                 }
               }
               .__uploadBtn {
+                opacity: .3;
+                // cursor: pointer;
                 margin-left: auto;
               }
+              .__uploadBtn.upload_ch {
+                opacity: 1;
+                cursor: pointer;
+                color: rgb(0, 149, 246);
+              }
             }
+          }
+          .sma {
+            cursor: pointer;
           }
         }
         .__check {
@@ -521,6 +490,7 @@ export default {
               font-weight: bold;
             }
             .__search {
+              cursor: pointer;
               font-size: 12px;
               font-weight: bold;
               color: #000;

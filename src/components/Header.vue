@@ -42,6 +42,8 @@ export default {
       fileList: [],
       files: [],
       files_name: "",
+      user_sample: [],
+
 
       // home, search, plusMenu 3가지는 안먹힌다 (나중에 교체한다)
       home_ch: false,
@@ -60,24 +62,6 @@ export default {
       notice_loding: false,
       makeBox_ch: false,
 
-      user_sample: [
-        {"name":"kmackin0","nickname":"Kyle","profile":"https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/554/3e05578b1ed635fdf852fd89e3c6fef8_res.jpeg"},
-        {"name":"lwickendon1","nickname":"Lilas","profile":"https://sungyesa.com/new/data/file/free/3699079233_vdoEG2zY_2523666B-52A6-4DD7-B32F-0C6D8FDE8D1F.jpeg"},
-        {"name":"tcotillard2","nickname":"Tiebold","profile":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5fx7465mV30augpIMD5pFNa2BWLNXWrp4uA&usqp=CAU"},
-        {"name":"cchsteney3","nickname":"Cordelia","profile":"https://images-kr.girlstyle.com/wp-content/uploads/2018/11/0000223371_001_20180810115738536.jpg"},
-        {"name":"jblakesley4","nickname":"Joscelin","profile":"https://img.hankyung.com/photo/201811/01.18271154.1.jpg"},
-        {"name":"rkirdsch5","nickname":"Robin","profile":"https://cdn.bokjitimes.com/news/photo/202002/22767_15736_3416.jpg"},
-        {"name":"mcaillou6","nickname":"Merrilee","profile":"https://cdnweb01.wikitree.co.kr/webdata/editor/202203/09/img_20220309153631_bc511c9b.webp"},
-        {"name":"slascell7","nickname":"Shelli","profile":"https://post-phinf.pstatic.net/MjAyMDEwMDhfMjU2/MDAxNjAyMTIzNjM5ODg1.jNBL7Kroe6kBSd8iL0D9gM4V516CBXZnUHFb-TBxIyIg.F1uXH4b7WuibteVcCmG-vZLniM5DrJzs2OCkqztuZnog.JPEG/%EA%B2%A8%EC%9A%B8_%EB%A9%94%EC%9D%B8%EC%BB%B7.jpg?type=w1200"},
-        {"name":"dsedcole8","nickname":"Duffie","profile":"https://img9.yna.co.kr/photo/cms/2019/02/01/81/PCM20190201000081005_P2.jpg"},
-        {"name":"rgranger9","nickname":"Reginauld","profile":"http://image.newsis.com/2022/10/31/NISI20221031_0001117996_web.jpg"},
-        {"name":"irodbournea","nickname":"Isahella","profile":"https://images.chosun.com/resizer/C6ad4fbBBVwyUdn6ziRBR_VEkL8=/616x0/smart/cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/2R24FEZO6VFKNHJKND4FGETXVY.JPG"},
-        {"name":"alamberteschib","nickname":"Auguste","profile":"http://dummyimage.com/118x100.png/ff4444/ffffff"},
-        {"name":"glubeckc","nickname":"Garrick","profile":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT05FKRbwYdbvIz_7q6yf_3Oevdk6NIoPIFrA&usqp=CAU"},
-        {"name":"wrannsd","nickname":"Waldo","profile":"https://newsimg-hams.hankookilbo.com/2022/10/06/c041ec67-565b-459d-a8e9-bb8e6a2e33b2.jpg"},
-        {"name":"cbiaggellie","nickname":"Cristiano","profile":"https://img.etoday.co.kr/pto_db/2020/06/20200621122424_1474938_466_568.jpg"}
-      ],
-
       search_user_sample: [],
       
     }
@@ -85,12 +69,11 @@ export default {
   methods: {
     // router -> 동적값 전달할땐 클릭이벤트로 한단 -> 아니면 요소자체에 RouterLink로
     // 여러 버튼에 따라 다르게 보내고싶으면 인자를 주어 각각 주면 된단
-    myPage(nickname, name) {
+    myPage(name) {
       this.$router.push({
         name: 'User',
         params: {
-          id : nickname,
-          name : name
+          id : name
         }
       })
       // this.$router.go();
@@ -189,7 +172,14 @@ export default {
         // 파일을 전송할때는 FormData 형식으로 전송하잔
         const formData = new FormData();
         // multer부분의 single()안의 이름과 파일자체인 즉 파일명 이름과 매칭시켜야 req.file에 들어간다(body포함이 아니니 body에 넣을껀 따로 넣고 file에 넣을꺼만 file명 매칭하면 된다)
-        formData.append("myfile", this.files);
+        const imgs = this.fileList;
+        console.log(imgs)
+        // 방금까진 해당 파일에 forEach 못쓴다 나오더니 다시 똑같이 해보니깐 된다 -> 앞으론 안될때 다시 반복해서 해보고 서버 껏다켜보고 해보자 -> 본인이 한게 안될라가 없단면
+        imgs.forEach((img) => {
+          // multer에서의 파일명과 이름을 같게한다, input에서는 name이고 formData에선 키값으로 주면 된단
+          // 여러 파일담긴거 전체를 보내는게 아니라 반복문으로 각각 보내야 한단
+          formData.append("myfile", img);
+        })
         formData.append("email",this.$cookies.get('email'));
         formData.append("name",this.$cookies.get('name'));
         formData.append("nickname",this.$cookies.get('nickname'));
@@ -394,18 +384,25 @@ export default {
 
     }
   },
-  mounted() {
-    // display 크기에 따라 요소가 변해야 한다면 이렇게 window크기를 구해서 넣어줘도 되지만, css만 변경이라면 미디어 쿼리를 사용해도 무방하다
-    this.display = window.innerWidth;
-    if(window.innerWidth > 1200) {
-      this.tablet_display = false;
-      this.mobile_display = false;
-    } else if(window.innerWidth < 1200 && window.innerWidth >= 768) {
-      this.tablet_display = true;
-      this.mobile_display = false;
-    } else if(window.innerWidth <= 767) {
-      this.mobile_display = true;
-      this.tablet_display = false;
+  async mounted() {
+    try {
+      // display 크기에 따라 요소가 변해야 한다면 이렇게 window크기를 구해서 넣어줘도 되지만, css만 변경이라면 미디어 쿼리를 사용해도 무방하다
+      this.display = window.innerWidth;
+      if(window.innerWidth > 1200) {
+        this.tablet_display = false;
+        this.mobile_display = false;
+      } else if(window.innerWidth < 1200 && window.innerWidth >= 768) {
+        this.tablet_display = true;
+        this.mobile_display = false;
+      } else if(window.innerWidth <= 767) {
+        this.mobile_display = true;
+        this.tablet_display = false;
+      }
+      const user = await axios.post('http://localhost:8000/select', { name : this.name });
+      console.log(user)
+      this.user_sample = user.data;
+    } catch(e) {
+      console.log(e)
     }
   }
 }
@@ -465,7 +462,7 @@ export default {
             </div>
             <div class="__text" ref="text">만들기</div>
           </div>
-          <div class="__item __myinfo" @click="myPage(nickname, name), myinfoBtn()" :class="{ myinfo_ch }">
+          <div class="__item __myinfo" @click="myPage(name), myinfoBtn()" :class="{ myinfo_ch }">
             <div class="__icon"><i class="fa-regular fa-user"></i></div>
             <div class="__text" ref="text">프로필</div>
           </div>
@@ -515,8 +512,8 @@ export default {
           </div>
         </div>
         <div class="search__list" v-else>
-          <div class="search__user" v-for="user in search_user_sample" :key="user" @click="myPage(user.nickname, user.name)">
-            <img :src="user.profile" class="__myImg" />
+          <div class="search__user" v-for="user in search_user_sample" :key="user" @click="myPage(user.name)">
+            <div class="__myImg" ></div>
             <div class="__myData">
               <div class="__nickname">{{ user.nickname }}</div>
               <div class="__name">{{ user.name }}</div>
@@ -530,7 +527,7 @@ export default {
           <div class="notice__title">알림</div>
           <div class="notice__today">
             <div class="__today">오늘</div>
-            <div class="__todayUser" @click="myPage(nickname, name)">
+            <div class="__todayUser" @click="myPage(name)">
               <div class="__myImg"></div>
               <div class="__myData">
                 <div class="__nickname">{{ nickname }}</div>
@@ -546,7 +543,7 @@ export default {
         </div>
         <div class="notice__list" v-else>
           <div class="__lee">이번주</div>
-          <div class="notice__user" @click="myPage(nickname, name)">
+          <div class="notice__user" @click="myPage(name)">
             <div class="__myImg"></div>
             <div class="__myData">
               <div class="__nickname">{{ nickname }}</div>
