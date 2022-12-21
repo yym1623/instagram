@@ -413,6 +413,12 @@ export default {
   <div class="header">
     <div class="first__header" v-if="display <= 760 && user_display === true">
       <div class="__title"><i class="fa-solid fa-gear"></i></div>
+      <div class="__nicknameBox">
+        <div class="__nickname">{{ nickname }}</div>
+        <div class="__icons">
+          <span class="material-symbols-outlined">expand_more</span>
+        </div>
+      </div>
       <div class="__icon">
         <i class="fa-solid fa-user-plus"></i>
       </div>
@@ -1380,6 +1386,26 @@ export default {
         &:hover {
           transform: scale(1.1);
           transition: .2;
+        }
+      }
+      .__nicknameBox {
+        display: flex;
+        // flex가 걸린 자식요소에 felx로 각각 맞춰줄 수 있단
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        .__icons {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-left: 3px;
+          span {
+            font-size: 30px;
+          }
+        }
+        &:active {
+          opacity: .8;
         }
       }
       .__icon {

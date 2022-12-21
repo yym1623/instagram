@@ -24,7 +24,8 @@ export default {
   },
   data() {
     return {
-      upload_ch: false
+      upload_ch: false,
+      comment: "",
     }
   },
   computed: {

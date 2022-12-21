@@ -1,7 +1,9 @@
 <script>
 import axios from 'axios';
 import io from 'socket.io-client';
+
 export default {
+  // 대충 암묵적인 순서가 있단 - setup -> components, data 등등 -> 또한 어떤건 data() { return {} }, compunted: { data() }, mounted() 등등 선언이 다르다 내 예상 data랑 라이프사이클은 ()생성하고 data는 그 안의 리턴 또 생성한단 리턴밖에단 변수생성 등등 이 두가지말곤 다 : {} 안에다 함수생성 식으론 똑같단ㄴㄴ
   data() {
     return {
       nickname: this.$cookies.get('nickname'),
@@ -12,6 +14,7 @@ export default {
       message_data: "",
       user_list: [],
       msg_list: [],
+      fileList: [],
       idx: 0,
       my_idx: 0,
       msg_ch: "",
@@ -20,15 +23,22 @@ export default {
       // poling 오류가 걸린다 -> io 두번째 인자인 transports -> websocket으로 설정하니 해결했단
       socket: io('localhost:8000', { transports: ['websocket'] }),
       
+      // 객체로 넘어오지만 문자열로해도 잘 들어간다, 그래도 맞게 사용하잔 -> 나중에 햇갈릴수 있으니
+      socket_file_img: {},
       send_ch: false,
       message: false,
       left_hide: false,
       right_hide: false,
+      socket_img_ch: false,
     }
   },
   methods: {
     // click event -> methods로 (computed -> x)
     async sendMessage(name, email, idx) {
+      this.message_data = "";
+      this.socket_file_img = "";
+      this.socket_img_ch = false;
+
       this.idx = idx;
       this.left_hide = true;
       this.right_hide = false;
@@ -63,7 +73,8 @@ export default {
       this.socket.emit('chat', {
         msg: this.message_data,
         idx: this.msg_ch,
-        my_idx: this.my_idx
+        my_idx: this.my_idx,
+        img: this.socket_file_img
       })
       this.message_data = '';
       
@@ -77,26 +88,52 @@ export default {
         // + 수정 -> 소켓에서 보낸 데이터를 서버쪽에서 디비에 저장시키고 돌아올때 저장된걸 보여준단, 순간 보낸걸 받아서 다시 보내고 저장해서 이상했단
         const send_msg = await axios.post('http://localhost:8000/select_msg', { idx: this.msg_ch });
         this.msg_list = send_msg.data;
-
+        this.socket_img_ch = false;
+        console.log(this.msg_list)
         // this.msg_list = this.msg_list.concat(data.msg)
       })
     },
-    upload() {
-
-    }
+    upload(e) {
+      console.log(e);
+      this.socket_file_img = e[0];
+      console.log(this.socket_file_img)
+      console.log(e)
+      this.addFiles(e)
+      this.socket_img_ch = true;
+    },
+    async addFiles (files) {
+      // 반복문으로 여러개 가능하게 했지만 소켓에선 하나만 쓰잔 -> 굳이 하나로 바꿀필욘없다 나중을 위해선
+      for(let i = 0; i < files.length; i++) {
+        const src = await this.readFiles(files[i])
+        files[i].src = src
+        this.fileList.push(files[i])
+      }
+      if(this.fileList.length > 0) {
+        this.sample_img = true;
+      } else {
+        this.sample_img = false;
+      }
+    
+    },
+    async readFiles (files) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = async (e) => {
+          resolve(e.target.result) 
+        }
+        reader.readAsDataURL(files)
+      })
+    },
   },
   computed: {
     // computed 만들걸 -> watch에선 선언만 하는거만으로 바뀌는건 computed에서 다 끝내놔서 그걸 선언만하면되는거다 만약 computed로 만든걸 watch로 변경된 데이터를 다시 재할당해야할 경우엔 watch 첫번째인자로 변경된값으로 변경할 순 있단  
     send() {
-      if(this.message_data.length > 0) {
+      if(this.message_data.length > 0 || this.socket_img_ch) {
         this.send_ch = true;
       } else {
         this.send_ch = false;
       }
     },
-  },
-  directives() {
-
   },
   watch: {
     // computed -> watch 연결은 함수명을 같게해주면 된다, 데이터 선언한 이름과 같게해줘도 데이터의 실시간 체크도 할 수 있단, 첫번째 인자로 변경된 데이터가 할당되서 다른값에 재할당 하고싶으면 할 수 있단
@@ -143,6 +180,7 @@ export default {
         <div class="__myMenu">
           <!-- my -->
           <!-- 반복되는 유저마다 클릭시 메세지창으로 가야하니 v-for부분에 click이 맞단 -->
+          <!-- <MsgUser></MsgUser> -->
           <div class="__myInfos"  @click="sendMessage(user.name, user.email, user.idx)" v-for="user in user_list" :key="user">
             <div class="__infoBox">
               <div class="__myImg"></div>
@@ -164,6 +202,7 @@ export default {
         <!-- 실제 socket message 창 연결 -->
         <!-- <div class="__message"></div> -->
       </div>
+      <!-- 컴포넌트할껏은 그부분만 복사해서 붙여넣어서 props로 넘겨서 해당 부모요소에만 조건이든 뭐든 걸거만 걸면 된단 -> 넘겨온 해당 데이터는 해당페이지에서 렌더링한다 -->
       <div class="right__messageBox" v-else :class="{ right_hide }">
         <div class="right__header">
           <div class="__userInfo">
@@ -179,10 +218,16 @@ export default {
         </div>
         <div ref="msg_list" class="right__body">
           <div class="msg_box" :class="msg.my_id === my_idx ? 'right_msg' : 'left_msg'" v-for="msg in msg_list" :key="msg">
-            <span>{{ msg.msg }}</span>
+            <!-- <div class="img_textBox"> -->
+              <img v-if="msg.img !== ''" :src="msg.img" alt="">
+              <span v-if="msg.msg !== ''">{{ msg.msg }}</span>
+            <!-- </div> -->
           </div>
         </div>
         <div class="right__messageInput">
+          <div class="socket__img" :class="{ socket_img_ch }">
+            <img :src="fileList.length > 0 ? fileList[0].src : ''" />
+          </div>
           <div class="__messageInput">
             <div class="__img f__img"><i class="fa-regular fa-face-smile"></i></div>
             <div class="__input">
@@ -191,7 +236,7 @@ export default {
             <div class="__imgBox" v-if="!send_ch">
               <!-- <div class="__img s__img"><i @click="socket_img()" class="fa-regular fa-image"></i></div> -->
               <div class="__img s__img">
-                <input type="file" name="socket_img"  @change="upload($event.target.files)" ref="file" style="display: none" />
+                <input type="file" @change="upload($event.target.files)" ref="file" style="display: none" />
                 <i @click="$refs.file.click()" class="fa-regular fa-image"></i>
               </div>
               <div class="__img t__img"><i class="fa-regular fa-heart"></i></div>
@@ -424,9 +469,30 @@ export default {
         }
       }
       .right__messageInput {
+        position: relative;
         margin-top: auto;
-        padding: 20px;
+        // padding: 20px;
+        margin: 20px;
         box-sizing: border-box;
+        .socket__img {
+          // 이미지가 개수나 위치가 고정값이라면 이렇게줘도 상관없단
+          display: none;
+          position: absolute;
+          width: 100%;
+          top: -120px;
+          padding-left: 5px;
+          height: 100%;
+          border-bottom: none;
+          img {
+            width: 150px;
+            height: 100px;
+            // border-radius은 뭔가 10이 깔끔하단 20은 너무큼
+            border-radius: 10px;
+          }
+        }
+        .socket__img.socket_img_ch {
+          display: block;
+        }
         .__messageInput {
           display: flex;
           align-items: center;

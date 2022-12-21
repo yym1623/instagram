@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import axios from 'axios'
 
 // components
-import MakeUser from './Make_user.vue';
+import MakeUser from '../components/Make_user.vue';
 
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -29,8 +29,6 @@ export default {
       name: this.$cookies.get('name'),
       user_list: [],
       users_list: [],
-
-      upload_ch: false,
       comment: "",
     }
   },
@@ -98,8 +96,7 @@ export default {
           </div>
           <!-- 게시글 -->
           <!-- 반복문은 반복 개수만큼 반복문건 요소가 복사된다 (ex 리스트가 3개면 요소도 3개가 된다) -->
-          <MakeUser class="__board" v-bind:user_list="user_list">
-          </MakeUser>
+          <MakeUser class="__board" v-bind:user_list="user_list"></MakeUser>
           <!-- 끝난 지점엔 항상 체크표시가 나오게 아이템 하나 추가 -->
           <div class="__board __check">
             <div class="__success">
@@ -387,16 +384,6 @@ export default {
                   border: none;
                   outline: none;
                 }
-              }
-              .__uploadBtn {
-                opacity: .3;
-                // cursor: pointer;
-                margin-left: auto;
-              }
-              .__uploadBtn.upload_ch {
-                opacity: 1;
-                cursor: pointer;
-                color: rgb(0, 149, 246);
               }
             }
           }

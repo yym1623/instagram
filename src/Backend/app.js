@@ -6,7 +6,7 @@ import cors from 'cors';
 // nodejs에서 img처리 도와주는 라이브러리
 import multer from 'multer';
 // 파일경로 확인해주는 라이브러리 인거 같단
-import fs from 'fs';
+import { writeFile } from 'fs';
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv';
 import { v4 } from 'uuid';
@@ -104,22 +104,39 @@ io.on('connection', function(socket) {
 	// } else {
 	// 	console.log("있음")
 	// }
-  socket.on('chat', function(data) {
+  socket.on('chat', function(data, callback) {
 		socket.join(data.idx)
+		console.log('----')
+		console.log(data)
 		// io로 묶어야하나보다 -> 그게 맞긴하넨 -> 전체에서 룸을 만들어서 그 안에서 socket으로 하는거다
+		// 일단 확장자 없는 파일도있으니 강제로 다 png로 바꿔보잔
+		// 같은 함수를 두번쓰면 오류나? 하나만되난? -> 아닐거같다
+		// console.log(img)
+		
+		
+		// fs -> nodejs 모듈이단
+		// fs -> writeFile -> 파일을 생성해준다
+		
+		let imgs;
+		if(data.img) {
+			const img_name = v4() + ".png";
+			imgs = "/public/socket/" + img_name;
+			const img_data = data.img;
+			writeFile("public/socket/" + img_name, img_data, (err) => {
+				// callback({ message: err ? "failure" : "success" });
+				if(err) console.log(err);
+			});
+		} else {
+			imgs = "";
+		}
+		
 		io.to(data.idx).emit('test', data)
 		
-		db.query(`INSERT INTO msg (msg, my_id, list_id) VALUE ('${data.msg}', '${data.my_idx}','${data.idx}')  `, (err, row) => {
+		db.query(`INSERT INTO msg (msg, img, my_id, list_id) VALUE ('${data.msg}', '${imgs}', '${data.my_idx}','${data.idx}')  `, (err, row) => {
 			if(err) console.error(err);
 			console.log(row);
 		})
-		console.log(data);
-		// 클라이언트에게 메시지 송신
-		// io.emit('chat', data);
-		
-
   });
-
 
 
   // 메시지를 전송한 클라이언트를 제외한 모든 클라이언트에게 메시지를 전송한다
@@ -268,6 +285,7 @@ app.post('/regster', (req, res) => {
 // 모두 app.vue로 전체로 가져와도 되지만 필요한곳에서만 쓰는게 좋단
 app.post('/user',(req, res) => {
 	// 특정 조건값을 기준으로 정렬하기 -> case
+	// 쿼리 테스트는 워크벤치에서 바로 해보잔
 	db.query(`SELECT * FROM user ORDER BY (CASE WHEN email='${req.body.email}' THEN 1 ELSE 0 END) DESC`, (err, row) => {
 		if(err) console.error(err);
 		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다

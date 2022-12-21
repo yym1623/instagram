@@ -131,8 +131,9 @@ export default {
         </div>
       </div>
       <div class="__highright">
+        <div class="__name">{{ user.name }}</div>
         <!-- 여러 컴포넌트에 windth 넓이 구하는게 여러개있으면 중첩이되어 오류가 걸린다 -> 이럴때 pinia, vuex같은 상태관리에 하나로 작성하고 필요한 컴포넌트 여러군대서 불러와서 쓰기만 하면 된단 -->
-        <swiper class="swiper swiper-container" :slides-per-view="6"  scrollbar :space-between="10" :modules="modules">
+        <swiper class="swiper swiper-container" :slides-per-view="7"  scrollbar :space-between="20" :modules="modules">
           <swiper-slide class="swiper__item">
             <div class="__img"><i class="fa-solid fa-plus"></i></div>
             <div class="__nickname">신규</div>
@@ -310,6 +311,13 @@ export default {
       height: 130px;
       margin-bottom: 44px;
       padding-left: 50px;
+      .__name {
+        display: none;
+        font-size: 14px;
+        font-weight: bold;
+        padding: 10px;
+        margin-bottom: 20px;
+      }
       .swiper {
         .swiper__item {
           cursor: pointer;
@@ -503,6 +511,9 @@ export default {
       .__highright {
         padding-left: 0;
         margin: 16px 0 24px 16px;
+        .__name {
+          display: block;
+        }
         .swiper {
           .swiper__item {
             .__img {
