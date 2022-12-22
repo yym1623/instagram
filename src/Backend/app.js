@@ -198,6 +198,7 @@ app.post('/login', (req, res) => {
 						} else {
 							// res 2번 사용하니 오류걸림 send지우고 아래 session을 통한 redirect()를 사용함으로 오류가 사라졌단
 							// 세션추가
+							req.session.idx = row[0].idx;
 							req.session.email = row[0].email;
 							req.session.name = row[0].name;
 							req.session.nickname = row[0].nickname;
@@ -307,10 +308,20 @@ app.post('/user_name',(req, res) => {
 
 // 게시물 조회
 app.get('/make_select',(req, res) => {
+	
+	// 조회한 데이터
 	db.query(`SELECT * FROM make WHERE idx IN (SELECT MAX(idx) FROM make GROUP BY user_id) ORDER BY idx DESC;`, (err, row) => {
 		if(err) console.error(err);
 		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
+		console.log(row)
 		res.json(row)
+		// 조회한 데이터 idx에 맞는걸 관계형으로 조회
+		// row.forEach((rows) => {
+		// 	console.log(rows.idx)
+		// 	db.query(`SELECT comment.idx, user_nickname, comment FROM make INNER JOIN comment ON make.idx = comment.make_id WHERE make.idx = '${rows.idx}' ORDER BY comment.idx DESC;`, (err, data) => {
+		// 		if(err) console.error(err);
+		// 	})
+		// })
 	})
 })
 
@@ -510,6 +521,37 @@ app.post('/make', upload.array('myfile'), function (req, res, next) {
 		})
 	})
 })
+
+app.post('/make_delete', function (req, res, next) {
+	console.log(req.body)
+	db.query(`DELETE FROM make WHERE idx = '${req.body.make_idx}'`, (err, row) => {
+		if(err) console.error(err);
+		res.json(row)
+	})
+})
+
+// 댓글쓰기 -> make부분에선 left join으로 같이 불러오기 해당 idx가 맞는 댓글들은ㄴ
+app.post('/make_comment', function (req, res, next) {
+	console.log(req.body)
+	// 굳이 바로 넣어주면될걸 데이터가 많지 않은이상 하나면 걍 바로 넣고 많으면 객체로 만들어줘서 넣어주잔
+	// `` 이런거 추가할떄 앞에다하면 무조건 2개생성되고 뒤에하면 하나다 -> vscord 익스텐션같단
+	// make idx받아와선 조회해서 거기값으로 comment 테이블에 넣어서 연결해주기
+	db.query(`SELECT * FROM make WHERE idx = '${req.body.idx}'`, (err, row) => {
+		if(err) console.error(err);
+		console.log(row)
+		// db.query(`UPDATE SET make comment = '${req.body.comment}', write_user = '${req.body.user_id}'`, (err, row) => {
+		// 	if(err) console.error(err);
+		// 	res.json(row)
+		// })
+
+		// 관계형은 대긴
+		// db.query(`INSERT INTO comment (user_nickname, comment, make_id, user_id) VALUE ('${req.body.nickname}', '${req.body.comment}', '${row[0].idx}', '${req.body.user_id}')`, (err, row) => {
+		// 	if(err) console.error(err);
+		// 	res.json(row)
+		// })
+	})
+})
+
 
 // socekt 때매 변경해서 사용해보긴 -> http server 설정한걸로 사용해야한다 -> 웹 소켓 프로토콜로 변경한단
 server.listen(port, () => console.log('localhost:8000'));

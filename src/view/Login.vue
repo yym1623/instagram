@@ -37,6 +37,7 @@ export default {
             this.error_message = "";
             // 클라 -> 쿠키에 데이터 저장(중복저장 불가능)
             // 하루마다 쿠키값 삭제후 -> 서버에 요청할떄 클라 쿠키값이 있다면 -> 그 쿠키값으로 세션값 가져오고, 쿠키값이 삭제되었다면 서버에서 세션재생성하여 보내준다 -> 그걸 클라에 쿠키로 저장한다
+            this.$cookies.set('idx', res.data.session.idx);
             this.$cookies.set('email', res.data.session.email);
             this.$cookies.set('name', res.data.session.name);
             this.$cookies.set('nickname', res.data.session.nickname);

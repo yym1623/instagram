@@ -199,6 +199,9 @@ export default {
         console.log(e)
       }
     },
+    notice_mobile_close() {
+      this.noticeBox_ch = false;
+    },
     make_back() {
       this.sample_img = false;
       this.fileList = [];
@@ -338,6 +341,7 @@ export default {
     },
     close_Search() {
       this.searchBox_ch = false;
+      this.data = "";
     },
   },
   computed: {
@@ -530,6 +534,11 @@ export default {
       <!-- notice Box -->
       <div class="noticeBox" :class="{ noticeBox_ch }">
         <div class="notice__titleBox">
+          <div class="notice__title__mobile">
+            <!-- icon이랑 그 부모요소 크기가 별로 차이안나면 둘 중 어디에 달든 상관은 없다 -> 해당 아이콘 자체에 다는게 더 좋은거같아서 했던거였단ㄴ -->
+            <div class="title__close" @click="notice_mobile_close()"><span class="material-symbols-outlined">arrow_back_ios</span></div>
+            <div class="title__text">알림</div>
+          </div>
           <div class="notice__title">알림</div>
           <div class="notice__today">
             <div class="__today">오늘</div>
@@ -1078,6 +1087,9 @@ export default {
       // transition: .5s;
       .notice__titleBox {
         display: block;
+        .notice__title__mobile {
+          display: none;
+        }
       }
       .notice__list {
         display: block;
@@ -1508,6 +1520,27 @@ export default {
           }
           .notice__title {
             display: none;
+          }
+          .notice__title__mobile {
+            // 위에서해도 상관없지만 나오면서 설정까지 하는것도 괜찮단
+            display: block;
+            display: flex;
+            padding: 0 16px;
+            height: 45px;
+            align-items: center;
+            border-bottom: 1px solid rgb(200,200,200);
+            box-sizing: border-box;
+            // padding이라 그만큼 줄어들어도 padding도 포함이라 border해도 딱 일자로 맞는단
+            // padding으로만 늘리지말고 양옆만 늘리면서 height를 주고 align-items (flex)로 맞춰주는것도 깔끔하단
+            .title__text {
+              // 이윤 전혀 모르겠지만 부모요소 flex주고 2개의 요소이기때문에 하나의 요소만 가운데 맞추기위해선 flex를 또 자식에게 줬는데 justif : center, 랑 flex : 1을 같이 주니깐 옮겨진다 둘 중 하나만이 아니라 -> 이건 공부해보잔ㄴㄴ
+              display: flex;
+              justify-content: center;
+              flex: 1;
+            }
+            .title__close {
+              cursor: pointer;
+            }
           }
           .notice__input {
             display: flex;

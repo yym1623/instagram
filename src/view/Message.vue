@@ -30,6 +30,7 @@ export default {
       left_hide: false,
       right_hide: false,
       socket_img_ch: false,
+      img_ch: false,
     }
   },
   methods: {
@@ -67,7 +68,7 @@ export default {
       this.left_hide = false;
     },
     // message가 예약어라 안된거 같단 -> 오류메세지 잘읽어라 not a function -> 함수조차 생성이 안된거지 소켓문제가 아니단
-    async messageBtn() {
+    messageBtn() {
       // socket
       // 서버로 데이터 보내기 -> 메세지는 소켓으로 넘어간 백쪽에서 디비에 넣어준단 -> 여기서 db로 요청하는게 아니라
       this.socket.emit('chat', {
@@ -77,9 +78,10 @@ export default {
         img: this.socket_file_img
       })
       this.message_data = '';
+      this.socket_file_img = '';
       
       // 서버에서 보낸 데이터 받기
-      await this.socket.on('test', async (data) => {
+      this.socket.on('test', async (data) => {
         console.log(data)
         console.log('`````````')
         // console.log('메세지받긴')
@@ -147,7 +149,7 @@ export default {
 
         messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
       });
-    }
+    },
   },
   async mounted() {
     if(this.$route.params.id) {
@@ -218,10 +220,11 @@ export default {
         </div>
         <div ref="msg_list" class="right__body">
           <div class="msg_box" :class="msg.my_id === my_idx ? 'right_msg' : 'left_msg'" v-for="msg in msg_list" :key="msg">
-            <!-- <div class="img_textBox"> -->
+            <div class="img_textBox" :class="{ img_ch : msg.img == ''}">
               <img v-if="msg.img !== ''" :src="msg.img" alt="">
-              <span v-if="msg.msg !== ''">{{ msg.msg }}</span>
-            <!-- </div> -->
+              <!-- 클래스바인딩으로 조건이 맞으면 클래스 추가시엔 :class="{ 클래스명 : 조건 }"이단 -->
+              <div class="__msg" :class="{ img_ch : msg.img !== ''}" v-if="msg.msg !== ''">{{ msg.msg }}</div>
+            </div>
           </div>
         </div>
         <div class="right__messageInput">
@@ -444,13 +447,26 @@ export default {
           display: flex;
           padding: 10px 0;
           box-sizing: border-box;
-          span {
-            border-radius: 30px;
-            padding: 15px;
-            background: transparent;
-            border: 1px solid #eee;
-            text-align: center;
-            box-sizing: border-box;
+          .img_textBox {
+            img {
+              width: 250px;
+              border-radius: 10px;
+            }
+            .__msg {
+              border-radius: 30px;
+              padding: 15px;
+              background: transparent;
+              border: 1px solid #eee;
+              text-align: center;
+              box-sizing: border-box;
+            }
+            .__msg.img_ch {
+              margin-top: 16px;
+              margin-left: auto;
+            }
+          }
+          .img_textBox.img_ch {
+            display: flex;
           }
         }
         .msg_box.right_msg {
@@ -458,13 +474,26 @@ export default {
           justify-content: flex-end;
           padding: 10px 0;
           box-sizing: border-box;
-          span {
-            // width가 해당 값만큼 안늘어나서 불편할땐 padding을 전체적으로주면 그만큼 가운데로 가게되니 편하단
-            border-radius: 30px;
-            padding: 15px;
-            background: #eee;
-            text-align: center;
-            box-sizing: border-box;
+          .img_textBox {
+            img {
+              width: 250px;
+              border-radius: 10px;
+            }
+            .__msg {
+              // width가 해당 값만큼 안늘어나서 불편할땐 padding을 전체적으로주면 그만큼 가운데로 가게되니 편하단
+              border-radius: 30px;
+              padding: 15px;
+              background: #eee;
+              text-align: center;
+              box-sizing: border-box;
+            }
+            .__msg.img_ch {
+              margin-top: 16px;
+              margin-left: auto;
+            }
+          }
+          .img_textBox.img_ch {
+            display: flex;
           }
         }
       }

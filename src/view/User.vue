@@ -268,6 +268,16 @@ export default {
             cursor: pointer;
             &:last-child {
               border-bottom: none;
+              &:hover {
+                border-radius: 0 0 10px 10px;
+              }
+            }
+            &:first-child {
+              border-top: none;
+              &:hover {
+                background: rgb(250, 250, 250);
+                border-radius: 10px 10px 0 0;
+              }
             }
             &:hover {
               background: rgb(250, 250, 250);
