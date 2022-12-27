@@ -29,6 +29,7 @@ export default {
       users_list: [],
       comment: "",
       make_idx: "",
+      commentLength: 0,
 
       upload_ch: false,
       board_setting_ch: false,
@@ -57,7 +58,7 @@ export default {
       // }
 
       // key : value 하나로하면 똑같이 들어간단 -> 이름을 지정해주자 (보낼때 이름은 같더라도 받은곳에선 달라진단(데이터에 따라))
-      const make_delete = await axios.post('http://localhost:8000/make_delete', { make_idx : idx });
+      const make_delete = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/make_delete', { make_idx : idx });
       console.log(make_delete);
       // 서버에서 삭제작업후엔 적용될려면 새로고침이 필요하단 -> 딱히 해당부분만 할필욘없다 전체 새로고침하잔ㄴ 이럴땐
       this.$router.go();
@@ -71,8 +72,15 @@ export default {
     },
     async comment_btn(idx) {
       // 값없으면 클릭못하는데 여기서 이중체크할 필욘없단
-      const comment = await axios.post('http://localhost:8000/make_comment', { idx : idx, comment: this.comment, nickname : this.nickname, user_id : this.user_id });
+      const comment = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/make_comment', { idx : idx, comment: this.comment, nickname : this.nickname, user_id : this.user_id });
       console.log(comment)
+      this.$router.go();
+    },
+    board_like() {
+
+    },
+    board_save() {
+
     }
   },
   computed: {
@@ -82,25 +90,31 @@ export default {
       } else {
         this.upload_ch = false;
 		  }
-	  }
+	  },
+    // displayLnegth() {
+    //   this.$store.dispatch('displayLength')
+    // }
   },
   watch: {
     // watch는 선언만으로 되는게 신기하단
     comment_ch() {
     
     },
+    // displayLnegth(e) {
+    //   console.log(e)
+    // }
   },
   async mounted() {
     try {
       // 게시물 전체 조회
-      const res = await axios.get('http://localhost:8000/make_select');
+      const res = await axios.get(import.meta.env.VITE_FULL_DB_URL + '/make_select');
       console.log(res);
-      console.log('미테')
       this.user_list = res.data;
+      this.commentLength = res.data.commentLength.length
 
       // 유저 전체 조회
       // console.log에서도 없는값을 조회할려하면 오류걸리면서 그 아래 코드는 실행안되고 멈추는 현상이 발생한단
-      const user = await axios.post('http://localhost:8000/select', { name : this.name });
+      const user = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/select', { name : this.name });
       console.log(user);
       this.users_list = user.data;
       console.log(this.users_list);
@@ -144,7 +158,7 @@ export default {
           <!-- 게시글 -->
           <!-- 반복문은 반복 개수만큼 반복문건 요소가 복사된다 (ex 리스트가 3개면 요소도 3개가 된다) -->
           <!-- <MakeUser class="__board" v-bind:user_list="user_list"></MakeUser> -->
-          <div class="__board" v-for="user in user_list" :key="user">
+          <div class="__board" v-for="user in user_list.row" :key="user">
             <div class="board__title">
               <div class="__myInfo">
                 <div class="__infoBox">
@@ -186,13 +200,25 @@ export default {
             <div class="board__content">
               <!-- 이렇게 같은 item들을 flex로 할땐 동일하게 되지만 하나만 margin auto, 해당 자식만 flex를 또 걸어 하나만 따로 맨끝 이런식으로 지정해줄 수 있단 -->
               <div class="content__comu">
-                <div class="__icons __heart"><i class="fa-regular fa-heart"></i></div>
+                <div class="__icons __heart" @click="board_like()"><i class="fa-regular fa-heart"></i></div>
                 <div class="__icons __comment"><i class="fa-regular fa-comment"></i></div>
                 <div class="__icons __message" @click="msg_page()"><i class="fa-regular fa-paper-plane"></i></div>
-                <div class="__icons __save"><i class="fa-regular fa-bookmark"></i></div>
+                <div class="__icons __save" @click="board_save()"><i class="fa-regular fa-bookmark"></i></div>
               </div>
               <div class="comment__info">
                 <div class="info__title" v-if="user.make_write !== ''">{{ user.nickname }} <span>{{ user.make_write }}</span></div>
+              </div>
+              <!-- comment length -->
+              <div class="comment__length">
+                <div class="__length">
+                  <div class="info__title">댓글 ? 개 모두 보기</div>
+                </div>
+              </div>
+              <!-- comment data -->
+              <div class="comment__info">
+                <div class="comment__data"  v-for="comment in user_list.comment" :key="comment" >
+                  <div class="info__title" v-if="user.idx === comment.make_id">{{ comment.user_nickname }} <span>{{ comment.comment }}</span></div>
+                </div>
               </div>
               <div class="comment__date">
                 <div class="date__title">1일 전</div>
@@ -291,6 +317,7 @@ export default {
           justify-content: center;
           align-items: center;
           .swiper {
+            padding: 5px 0;
             width: 100%;
             .swiper__item {
               cursor: pointer;
@@ -300,9 +327,10 @@ export default {
                 align-items: center;
                 background: #eee;
                 width: 56px;
-                height: 56px ;
+                height: 56px;
                 border-radius: 50%;
-                // margin: auto;
+                position: relative;
+                z-index: 10;
               }
               .__nickname {
                 font-size: 12px;
@@ -465,6 +493,20 @@ export default {
                   font-size: 13px;
                 }
               }
+              .comment__data {
+                margin-top: 5px;
+                &:first-child {
+                  margin-top: 0;
+                }
+              }
+            }
+            .comment__length {
+              padding: 5px 11px;
+              .__length {
+                cursor: pointer;
+                color: #A8A8A8;
+                font-size: 14px;
+              }
             }
             .comment__date {
               padding: 13px;
@@ -508,61 +550,61 @@ export default {
             cursor: pointer;
           }
           .board__setting {
-    display: none;
-    position: absolute;
-    width: 400px;
-    top: 50%;
-    left:50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: rgb(0 0 0 / 10%) 0px 4px 12px;
-    box-sizing: border-box;
-    .item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 48px;
-      border-bottom: 1px solid #eee;
-      box-sizing: border-box;
-      color: #262626;
-      font-size: 14px;
-      cursor: pointer;
-      &:last-child {
-        border-bottom: none;
-        &:hover {
-          border-radius: 0 0 10px 10px;
-        }
-      }
-      &:first-child {
-        border-top: none;
-        &:hover {
-          background: rgb(250, 250, 250);
-          border-radius: 10px 10px 0 0;
-        }
-      }
-      &:hover {
-        background: rgb(250, 250, 250);
-      }
-    }
-  }
-  .board__setting.board_setting_ch {
-    display: block;
-    animation: fadeInUp 1s;
-    @keyframes fadeInUp {
-      0% {
-        opacity: 0;
-        // translate(x, y)
-        transform: translate(-50%, -45%);
-  
-      }
-      100% {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-      }
-    }
-  }
+            display: none;
+            position: fixed;
+            width: 400px;
+            top: 50%;
+            left:50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: rgb(0 0 0 / 10%) 0px 4px 12px;
+            box-sizing: border-box;
+            .item {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 48px;
+              border-bottom: 1px solid #eee;
+              box-sizing: border-box;
+              color: #262626;
+              font-size: 14px;
+              cursor: pointer;
+              &:last-child {
+                border-bottom: none;
+                &:hover {
+                  border-radius: 0 0 10px 10px;
+                }
+              }
+              &:first-child {
+                border-top: none;
+                &:hover {
+                  background: rgb(250, 250, 250);
+                  border-radius: 10px 10px 0 0;
+                }
+              }
+              &:hover {
+                background: rgb(250, 250, 250);
+              }
+            }
+          }
+          .board__setting.board_setting_ch {
+            display: block;
+            animation: fadeInUp 1s;
+            @keyframes fadeInUp {
+              0% {
+                opacity: 0;
+                // translate(x, y)
+                transform: translate(-50%, -45%);
+          
+              }
+              100% {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+              }
+            }
+          }
         }
         .__check {
           padding: 32px 12px;

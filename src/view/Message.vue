@@ -14,14 +14,14 @@ export default {
       message_data: "",
       user_list: [],
       msg_list: [],
-      fileList: [],
+      // fileList: [],
       idx: 0,
       my_idx: 0,
       msg_ch: "",
       socket_msg: "",
       // 주소는 server꺼를 넣는단
       // poling 오류가 걸린다 -> io 두번째 인자인 transports -> websocket으로 설정하니 해결했단
-      socket: io('localhost:8000', { transports: ['websocket'] }),
+      socket: io(import.meta.env.VITE_DB_TARGET, { transports: ['websocket'] }),
       
       // 객체로 넘어오지만 문자열로해도 잘 들어간다, 그래도 맞게 사용하잔 -> 나중에 햇갈릴수 있으니
       socket_file_img: {},
@@ -29,7 +29,6 @@ export default {
       message: false,
       left_hide: false,
       right_hide: false,
-      socket_img_ch: false,
       img_ch: false,
     }
   },
@@ -38,7 +37,6 @@ export default {
     async sendMessage(name, email, idx) {
       this.message_data = "";
       this.socket_file_img = "";
-      this.socket_img_ch = false;
 
       this.idx = idx;
       this.left_hide = true;
@@ -46,19 +44,19 @@ export default {
       this.message = true;
 
       // 같은함수든 뭐든 같은곳에 2개의 같은 변수이름만 없으면된다 다른곳에선 다 써도 중복안된단 -> 지역변수라
-      const user_name = await axios.post('http://localhost:8000/user_name', { email : email });
+      const user_name = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/user_name', { email : email });
       // this붙인건 vue에서 선언한 데이터, 안붙인건 변수같은거단 = 같아도 this만 잘 구분하면 상관없단
       this.user_name = user_name.data;
       console.log(user_name)
 
-      const msg_ch = await axios.post('http://localhost:8000/msg_list', { my_idx : this.my_idx, idx : this.idx });
+      const msg_ch = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/msg_list', { my_idx : this.my_idx, idx : this.idx });
       console.log(msg_ch)
       this.msg_ch = msg_ch.data;
       console.log('test')
       console.log(this.msg_ch)
 
       // 처음부터 보여주는게 아닌 유저를 클릭한순간부터 보는거라 여기서부터 요청하면 된단
-      const msg_list = await axios.post('http://localhost:8000/select_msg', { idx : this.msg_ch })
+      const msg_list = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/select_msg', { idx : this.msg_ch })
       console.log(msg_list);
       console.log('asd')
       this.msg_list = msg_list.data;
@@ -68,7 +66,10 @@ export default {
       this.left_hide = false;
     },
     // message가 예약어라 안된거 같단 -> 오류메세지 잘읽어라 not a function -> 함수조차 생성이 안된거지 소켓문제가 아니단
-    messageBtn() {
+    messageBtn(e) {
+      if(e) {
+        this.socket_file_img = e[0];
+      }
       // socket
       // 서버로 데이터 보내기 -> 메세지는 소켓으로 넘어간 백쪽에서 디비에 넣어준단 -> 여기서 db로 요청하는게 아니라
       this.socket.emit('chat', {
@@ -88,49 +89,21 @@ export default {
         // this.socket_msg = data.msg;
         // this에 담긴 text를 그대로 디비에 넣어서 보여질수도있진만 -> 소켓을 이용해 검색된 내용을 받을때마다 api요청하여 디비에 넣고 보여준다 -> (소켓사용 이유가 아직 명확하진 않지만 일단 처음이지 해보잔)
         // + 수정 -> 소켓에서 보낸 데이터를 서버쪽에서 디비에 저장시키고 돌아올때 저장된걸 보여준단, 순간 보낸걸 받아서 다시 보내고 저장해서 이상했단
-        const send_msg = await axios.post('http://localhost:8000/select_msg', { idx: this.msg_ch });
+        const send_msg = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/select_msg', { idx: this.msg_ch });
         this.msg_list = send_msg.data;
-        this.socket_img_ch = false;
         console.log(this.msg_list)
         // this.msg_list = this.msg_list.concat(data.msg)
       })
     },
-    upload(e) {
-      console.log(e);
-      this.socket_file_img = e[0];
-      console.log(this.socket_file_img)
-      console.log(e)
-      this.addFiles(e)
-      this.socket_img_ch = true;
-    },
-    async addFiles (files) {
-      // 반복문으로 여러개 가능하게 했지만 소켓에선 하나만 쓰잔 -> 굳이 하나로 바꿀필욘없다 나중을 위해선
-      for(let i = 0; i < files.length; i++) {
-        const src = await this.readFiles(files[i])
-        files[i].src = src
-        this.fileList.push(files[i])
-      }
-      if(this.fileList.length > 0) {
-        this.sample_img = true;
-      } else {
-        this.sample_img = false;
-      }
-    
-    },
-    async readFiles (files) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = async (e) => {
-          resolve(e.target.result) 
-        }
-        reader.readAsDataURL(files)
-      })
-    },
+    // upload(e) {
+    //   this.socket_file_img = e[0];
+    //   console.log(this.socket_file_img)
+    // },
   },
   computed: {
     // computed 만들걸 -> watch에선 선언만 하는거만으로 바뀌는건 computed에서 다 끝내놔서 그걸 선언만하면되는거다 만약 computed로 만든걸 watch로 변경된 데이터를 다시 재할당해야할 경우엔 watch 첫번째인자로 변경된값으로 변경할 순 있단  
     send() {
-      if(this.message_data.length > 0 || this.socket_img_ch) {
+      if(this.message_data.length > 0) {
         this.send_ch = true;
       } else {
         this.send_ch = false;
@@ -145,9 +118,24 @@ export default {
     },
     msg_list(e) {
       this.$nextTick(() => {
-        let messages = this.$refs.msg_list;
+        // let messages = this.$refs.msg_list;
+        // let test = document.querySelector('.right__body');
+        // test.scrollTo({ bottom: 0, behavior: 'smooth' });
 
-        messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+        const $element = document.querySelector(".right__body");
+        console.log($element)
+        // 현재의 최하단 구하기
+        const eh = $element.clientHeight + $element.scrollTop;
+        console.log(eh)
+        // 요소가 추가되어 길이가 길어지기 전에 비교
+        const isScroll = $element.scrollHeight <= eh;
+        console.log(isScroll)
+        // -- 요소 추가하는 코드 --
+
+        // 스크롤이 최하단 일때만 고정
+        if (!isScroll) {
+          $element.scrollTop = $element.scrollHeight;
+        }
       });
     },
   },
@@ -156,11 +144,11 @@ export default {
       this.message = true;
       this.user_name = this.$route.params.id
     }
-    const res = await axios.post('http://localhost:8000/user', { email : this.email } );
+    const res = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/user', { email : this.email } );
     console.log(res);
     this.my_idx = res.data[0].idx;
     this.user_list = res.data;
-  }
+  },
 }
 </script>
 
@@ -228,9 +216,9 @@ export default {
           </div>
         </div>
         <div class="right__messageInput">
-          <div class="socket__img" :class="{ socket_img_ch }">
+          <!-- <div class="socket__img" :class="{ socket_img_ch }">
             <img :src="fileList.length > 0 ? fileList[0].src : ''" />
-          </div>
+          </div> -->
           <div class="__messageInput">
             <div class="__img f__img"><i class="fa-regular fa-face-smile"></i></div>
             <div class="__input">
@@ -239,7 +227,7 @@ export default {
             <div class="__imgBox" v-if="!send_ch">
               <!-- <div class="__img s__img"><i @click="socket_img()" class="fa-regular fa-image"></i></div> -->
               <div class="__img s__img">
-                <input type="file" @change="upload($event.target.files)" ref="file" style="display: none" />
+                <input type="file" @change="messageBtn($event.target.files)" ref="file" style="display: none" />
                 <i @click="$refs.file.click()" class="fa-regular fa-image"></i>
               </div>
               <div class="__img t__img"><i class="fa-regular fa-heart"></i></div>
@@ -403,6 +391,7 @@ export default {
       max-width: 582px;
       width: 100%;
       height: 100%;
+      position: relative;
       .right__header {
         padding: 0 20px;
         height: 60px;
@@ -436,8 +425,9 @@ export default {
       }
       .right__body {
         width: 100%;
-        max-height: 748px;
-        height: 100%;
+        // max-height: 748px;
+        // height: 100%;
+        height: 83%;
         overflow: hidden auto;
         padding: 20px;
         box-sizing: border-box;
@@ -498,30 +488,35 @@ export default {
         }
       }
       .right__messageInput {
-        position: relative;
+        // position: relative;
+        padding: 20px;
+        position: absolute;
+        /* bottom: 30px; */
+        width: 100%;
+        bottom: 0;
         margin-top: auto;
         // padding: 20px;
-        margin: 20px;
+        // margin: 20px;
         box-sizing: border-box;
-        .socket__img {
-          // 이미지가 개수나 위치가 고정값이라면 이렇게줘도 상관없단
-          display: none;
-          position: absolute;
-          width: 100%;
-          top: -120px;
-          padding-left: 5px;
-          height: 100%;
-          border-bottom: none;
-          img {
-            width: 150px;
-            height: 100px;
-            // border-radius은 뭔가 10이 깔끔하단 20은 너무큼
-            border-radius: 10px;
-          }
-        }
-        .socket__img.socket_img_ch {
-          display: block;
-        }
+        // .socket__img {
+        //   // 이미지가 개수나 위치가 고정값이라면 이렇게줘도 상관없단
+        //   display: none;
+        //   position: absolute;
+        //   width: 100%;
+        //   top: -120px;
+        //   padding-left: 5px;
+        //   height: 100%;
+        //   border-bottom: none;
+        //   img {
+        //     width: 150px;
+        //     height: 100px;
+        //     // border-radius은 뭔가 10이 깔끔하단 20은 너무큼
+        //     border-radius: 10px;
+        //   }
+        // }
+        // .socket__img.socket_img_ch {
+        //   display: block;
+        // }
         .__messageInput {
           display: flex;
           align-items: center;
@@ -602,10 +597,12 @@ export default {
         max-width: 100%;
         .right__body {
           width: 100%;
-          max-height: 790px;
-          height: 100%;
-          padding: 20px;
-          box-sizing: border-box;
+        // max-height: 748px;
+        // height: 100%;
+        height: 83%;
+        overflow: hidden auto;
+        padding: 20px;
+        box-sizing: border-box;
         }
       }
     }
@@ -635,8 +632,10 @@ export default {
         max-width: 100%;
         .right__body {
           width: 100%;
-          max-height: 743px;
-          height: 100%;
+          // max-height: 748px;
+          // height: 100%;
+          height: 80%;
+          overflow: hidden auto;
           padding: 20px;
           box-sizing: border-box;
         }
@@ -647,6 +646,9 @@ export default {
               display: block;
             }
           }
+        }
+        .right__messageInput {
+          bottom: 50px;
         }
       }
       .right__messageBox.right_hide {
@@ -668,6 +670,34 @@ export default {
       width: 100%;
       height: 100vh;
       margin: auto;
+    }
+  }
+}
+
+// mobile3 ->>
+@media screen and (max-width: 550px) {
+  .message {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    margin: auto;
+    padding: 0;
+    .inner {
+      width: 100%;
+      height: 100vh;
+      margin: auto;
+      .right__messageBox {
+        .right__body  {
+          
+          .msg_box.right_msg {
+            .img_textBox {
+              img {
+                width: 180px;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

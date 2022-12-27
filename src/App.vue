@@ -18,6 +18,7 @@ export default {
     if(!this.$cookies.get('email')) {
       this.$router.push('/login');
     }
+
   }
 }
 </script>

@@ -66,11 +66,30 @@ export default {
       this.setting_ch = false;
     }
   },
+  computed: {
+    dropBox() {
+      document.addEventListener('click', evt => {
+        const box = document.querySelector('.setting');
+        const boxBtn = document.querySelector('.__setting');
+        // 하단 메뉴박스
+        if(boxBtn.contains(evt.target)) {
+
+        } else if(!box.contains(evt.target)) {
+          this.setting_ch = false;
+        }
+      })
+    }
+  },
+  watch: {
+    dropBox() {
+
+    }
+  },
   async mounted() {
     console.log(this.name);
 
     const user = await axios({
-      url: 'http://localhost:8000/user_select',
+      url: import.meta.env.VITE_FULL_DB_URL + '/user_select',
       method: 'POST',
       data: { name : this.name }
     })
@@ -83,7 +102,7 @@ export default {
     // aixos.post로 줄여서 두번째인자로 데이터주니깐 데이터가 안온다 객체로 data로 주니깐 간다 -> 대체모냔 -> 알아보잔axioss
     // this로 data에 바로 넣으면은 test1 : ''로 들어간단 key value가 똑같이 가는줄 알았는데 하나로 넣으면 -> 그럼 객체로 그냥 name : this.name 이런식으로 보내잔
     const res = await axios({
-      url: 'http://localhost:8000/user_make_select',
+      url: import.meta.env.VITE_FULL_DB_URL + '/user_make_select',
       method: 'POST',
       data: { name : this.name }
     })
@@ -166,7 +185,8 @@ export default {
           <div class="__text">태그됨</div>
         </div>
       </div>
-      <div class="__data">
+      <!-- 게시물 데이터 -->
+      <div class="__data" v-show="boar_ch">
         <!-- 부모에서 반복쓰면 부모전체가 반복된다 아이템에다가 해야한다 -> 잘 구분해서 쓰잔(순서) -->
         <div class="gd">
           <!-- test (9) -->
@@ -174,6 +194,39 @@ export default {
           <div class="__item" v-for="user_item in user_list" :key="user_item">
             <img :src="user_item.img.split(',')[0]" alt="">
           </div>
+        </div>
+      </div>
+      <!-- 릴스 -->
+      <div class="__data" v-show="play_ch">
+        <!-- 부모에서 반복쓰면 부모전체가 반복된다 아이템에다가 해야한다 -> 잘 구분해서 쓰잔(순서) -->
+        <div class="gd">
+          <!-- test (9) -->
+          <!-- v-for 반복문키는 아이템 전체를 줘도되지만 아이템안에 이름으로 구별해줘도 좋단 -->
+          <!-- <div class="__item" v-for="user_item in user_list" :key="user_item">
+            <img :src="user_item.img.split(',')[0]" alt="">
+          </div> -->
+        </div>
+      </div>
+      <!-- 저장됨 -->
+      <div class="__data" v-show="save_ch">
+        <!-- 부모에서 반복쓰면 부모전체가 반복된다 아이템에다가 해야한다 -> 잘 구분해서 쓰잔(순서) -->
+        <div class="gd">
+          <!-- test (9) -->
+          <!-- v-for 반복문키는 아이템 전체를 줘도되지만 아이템안에 이름으로 구별해줘도 좋단 -->
+          <!-- <div class="__item" v-for="user_item in user_list" :key="user_item">
+            <img :src="user_item.img.split(',')[0]" alt="">
+          </div> -->
+        </div>
+      </div>
+      <!-- 태그됨 -->
+      <div class="__data" v-show="tag_ch">
+        <!-- 부모에서 반복쓰면 부모전체가 반복된다 아이템에다가 해야한다 -> 잘 구분해서 쓰잔(순서) -->
+        <div class="gd">
+          <!-- test (9) -->
+          <!-- v-for 반복문키는 아이템 전체를 줘도되지만 아이템안에 이름으로 구별해줘도 좋단 -->
+          <!-- <div class="__item" v-for="user_item in user_list" :key="user_item">
+            <img :src="user_item.img.split(',')[0]" alt="">
+          </div> -->
         </div>
       </div>
     </div>

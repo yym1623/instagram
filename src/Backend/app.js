@@ -27,7 +27,7 @@ const server =  http.createServer(app);
 const io = new Server(server, {
   cors: {
 		// 서버 본인껄 origin 하지않는다 cors -> 클라쪽껄 해준단
-    origin: ['http://localhost:5173']
+    origin: [process.env.URL]
   }
 })
 
@@ -106,8 +106,8 @@ io.on('connection', function(socket) {
 	// }
   socket.on('chat', function(data, callback) {
 		socket.join(data.idx)
-		console.log('----')
-		console.log(data)
+		// console.log('----')
+		// console.log(data)
 		// io로 묶어야하나보다 -> 그게 맞긴하넨 -> 전체에서 룸을 만들어서 그 안에서 socket으로 하는거다
 		// 일단 확장자 없는 파일도있으니 강제로 다 png로 바꿔보잔
 		// 같은 함수를 두번쓰면 오류나? 하나만되난? -> 아닐거같다
@@ -134,7 +134,7 @@ io.on('connection', function(socket) {
 		
 		db.query(`INSERT INTO msg (msg, img, my_id, list_id) VALUE ('${data.msg}', '${imgs}', '${data.my_idx}','${data.idx}')  `, (err, row) => {
 			if(err) console.error(err);
-			console.log(row);
+			// console.log(row);
 		})
   });
 
@@ -296,7 +296,7 @@ app.post('/user',(req, res) => {
 
 // 메세지 유저이름만 다시 요청
 app.post('/user_name',(req, res) => {
-	console.log(req.body)
+	// console.log(req.body)
 	// 특정 조건값을 기준으로 정렬하기 -> case
 	db.query(`SELECT * FROM user WHERE email = '${req.body.email}'`, (err, row) => {
 		if(err) console.error(err);
@@ -308,26 +308,30 @@ app.post('/user_name',(req, res) => {
 
 // 게시물 조회
 app.get('/make_select',(req, res) => {
-	
 	// 조회한 데이터
+	// ex 두개의 조회데이터엔 각각 게시물에 맞게 관계형으로 foreach같은걸 돌려 맞춰줘야할떄 쿼리로 어렵게 하지말고 각각 가져와서 백에서 idx 맞는거끼리 넣어주는것도 괜찮단
 	db.query(`SELECT * FROM make WHERE idx IN (SELECT MAX(idx) FROM make GROUP BY user_id) ORDER BY idx DESC;`, (err, row) => {
 		if(err) console.error(err);
-		// 오브젝트로 보내면 data라는거 안으로 들어간단 -> 오브젝트풀면 바로 들어간다
-		console.log(row)
-		res.json(row)
-		// 조회한 데이터 idx에 맞는걸 관계형으로 조회
-		// row.forEach((rows) => {
-		// 	console.log(rows.idx)
-		// 	db.query(`SELECT comment.idx, user_nickname, comment FROM make INNER JOIN comment ON make.idx = comment.make_id WHERE make.idx = '${rows.idx}' ORDER BY comment.idx DESC;`, (err, data) => {
-		// 		if(err) console.error(err);
-		// 	})
-		// })
+		// db.query(`SELECT * FROM comment`, (err, comment) => {
+		// 프론트에서 slice로 할수도 있겠지만은 전체에서 구분해줘야할땐 쿼리에서 그룹으로하여 3개씩 가져온단
+		db.query(`SELECT * FROM ( 
+			SELECT *, RANK() OVER (PARTITION BY M.make_id ORDER BY M.idx DESC, M.idx DESC) AS RN  
+			FROM comment AS M) AS RANKING WHERE RANKING.RN <= 3`, (err, comment) => {
+			if(err) console.error(err)
+			// 2. 각각 가져와선 가공해서 idx맞게 넣어줄라했는데 이거도 실패 -> 클라에 각각 보내줘서 idx가 맞는거끼리 나타나게 해준단
+			// 조회용으로 댓글 전체 가져오자
+			// 이렇게 겹쳐서 여러개 보낼수 있는데 클라에서 오류뜬건 가져온게 바뀌면서 해당 요소에 값이 없어서 발생하는 오류이므로 이렇게 겹쳐서 보내도 된단
+			db.query(`SELECT * FROM comment`, (err, commentLength) => {
+				res.json({row, comment, commentLength})
+			
+			})
+		})
 	})
 })
 
 // 메세지 리스트 박스
 app.post('/msg_list',(req, res) => {
-	console.log(req.body)
+	// console.log(req.body)
 	// user -> 본인 idx -> msg_list에 넣어서 매칭한단
 	// db 여러개 넣을땐 같은 req이름이면 해당 db들어가기전까진 현재 db값의 req값이단 -> 순서대로 들감
 	// db.query(`SELECT * FROM user WHERE email = '${req.body.email}'`, (err, row) => {
@@ -349,16 +353,16 @@ app.post('/msg_list',(req, res) => {
 			// 두명의 유저가 있는 문자열만 숫자만 뒤바꿔서 새로운 변수에 넣어서 총 3개의 변수를 비교한다
 			// sec_idx = idx.split().reverse().join();
 			sec_idx = idx.split(',').reverse().join();
-			console.log(sec_idx);
+			// console.log(sec_idx);
 
 		}
-		console.log('idx')
-		console.log(idx)
+		// console.log('idx')
+		// console.log(idx)
 		// 여기선 클라에서 받은 idx값으로 값이 있으면 냅두고 없으면 만든다
 		db.query(`SELECT * FROM msg_list WHERE msg_list = '${idx}' OR msg_list = '${sec_idx}'`, (err, row) => {
 			if(err) console.error(err);
 			// 보통 없으면 위에서 리턴으로 끝내고 있으면 내려가니 이렇게 순서를 맞춘단
-			console.log(row.length);
+			// console.log(row.length);
 			if(row.length !== 0) {
 				// 맞다면 여기서 무슨값을 보내서 한단?
 				res.json(row[0].msg_list)
@@ -391,7 +395,7 @@ app.post('/msg_list',(req, res) => {
 app.post('/select', (req, res) => {
 	db.query(`SELECT * FROM user WHERE name not in('${req.body.name}')`, (err, row) => {
 		if(err) console.error(err);
-		console.log(row);
+		// console.log(row);
 		res.json(row)
 	})
 })
@@ -400,7 +404,7 @@ app.post('/select', (req, res) => {
 app.post('/user_select', (req, res) => {
 	db.query(`SELECT * FROM user WHERE name = '${req.body.name}'`, (err, row) => {
 		if(err) console.error(err);
-		console.log(row);
+		// console.log(row);
 		res.json(row)
 	})
 })
@@ -410,8 +414,8 @@ app.post('/user_select', (req, res) => {
 app.post('/select_msg',(req, res) => {
 	// 비교해줘야 한단 -> 위치 바꿔서 있으면 연동해준단
 	let idx = req.body.idx;
-	console.log('=----')
-	console.log(req.body)
+	// console.log('=----')
+	// console.log(req.body)
 	// let sec_idx;
 	// console.log('----------여기임')
 	// console.log(typeof idx)
@@ -506,7 +510,7 @@ app.post('/make', upload.array('myfile'), function (req, res, next) {
 			img.push("/public/uploads/" + imgs.filename)
 		})
 	}
-	console.log(img)
+	// console.log(img)
 
 	db.query(`SELECT * FROM user WHERE email = '${userInfo.email}'  `, (err, row) => {
 		// write같은 예약어는 사용하면 오류 걸리는거 같다 ``를 붙이지 않는이상 다른걸 쓰잔
@@ -523,7 +527,7 @@ app.post('/make', upload.array('myfile'), function (req, res, next) {
 })
 
 app.post('/make_delete', function (req, res, next) {
-	console.log(req.body)
+	// console.log(req.body)
 	db.query(`DELETE FROM make WHERE idx = '${req.body.make_idx}'`, (err, row) => {
 		if(err) console.error(err);
 		res.json(row)
@@ -532,27 +536,22 @@ app.post('/make_delete', function (req, res, next) {
 
 // 댓글쓰기 -> make부분에선 left join으로 같이 불러오기 해당 idx가 맞는 댓글들은ㄴ
 app.post('/make_comment', function (req, res, next) {
-	console.log(req.body)
+	// console.log(req.body)
 	// 굳이 바로 넣어주면될걸 데이터가 많지 않은이상 하나면 걍 바로 넣고 많으면 객체로 만들어줘서 넣어주잔
 	// `` 이런거 추가할떄 앞에다하면 무조건 2개생성되고 뒤에하면 하나다 -> vscord 익스텐션같단
 	// make idx받아와선 조회해서 거기값으로 comment 테이블에 넣어서 연결해주기
 	db.query(`SELECT * FROM make WHERE idx = '${req.body.idx}'`, (err, row) => {
 		if(err) console.error(err);
-		console.log(row)
-		// db.query(`UPDATE SET make comment = '${req.body.comment}', write_user = '${req.body.user_id}'`, (err, row) => {
-		// 	if(err) console.error(err);
-		// 	res.json(row)
-		// })
+		// console.log(row)
+	})
 
-		// 관계형은 대긴
-		// db.query(`INSERT INTO comment (user_nickname, comment, make_id, user_id) VALUE ('${req.body.nickname}', '${req.body.comment}', '${row[0].idx}', '${req.body.user_id}')`, (err, row) => {
-		// 	if(err) console.error(err);
-		// 	res.json(row)
-		// })
+	db.query(`INSERT INTO comment (user_nickname, comment, make_id, user_id) VALUE ('${req.body.nickname}', '${req.body.comment}', '${req.body.idx}', '${req.body.user_id}')`, (err, row) => {
+		if(err) console.error(err);
+		res.json(row)
 	})
 })
 
 
 // socekt 때매 변경해서 사용해보긴 -> http server 설정한걸로 사용해야한다 -> 웹 소켓 프로토콜로 변경한단
-server.listen(port, () => console.log('localhost:8000'));
+server.listen(port, () => console.log(process.env.DB_TARGET));
 // app.listen(port, () => console.log('localhost:8000'));

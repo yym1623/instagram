@@ -83,7 +83,7 @@ export default {
     async logOut() {
       try {
         const res = await axios({
-          url: 'http://localhost:8000/logout',
+          url: import.meta.env.VITE_FULL_DB_URL + '/logout',
           method: 'GET',
           data: {
             email: this.$cookies.get('email'),
@@ -184,7 +184,7 @@ export default {
         formData.append("name",this.$cookies.get('name'));
         formData.append("nickname",this.$cookies.get('nickname'));
         formData.append("write", this.make_text);
-        const res = await axios.post('http://localhost:8000/make',formData)
+        const res = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/make',formData)
         console.log(res)
         if(res.data.message === "업로드완료") {
           this.sample_img = false;
@@ -374,9 +374,57 @@ export default {
       } else {
         this.open_data = false;
       }
+    },
+    // 드롭다운 윈도우 클릭시 제거 버튼
+    dropBox() {
+      document.addEventListener('click', evt => {
+        const box = document.querySelector('.plusMenu');
+        const boxBtn = document.querySelector('.__plusMenu');
+        // 하단 메뉴박스
+        if(boxBtn.contains(evt.target)) {
+
+        } else if(!box.contains(evt.target)) {
+          this.plusMenu_ch = false;
+        }
+
+        // pc는 가능한데 모바일이 불가능하단
+        // contain은 없다곤 하지만 작동은 된단 -> 오류는 뜬다
+        // const makeBox = document.querySelector('.makeBox');
+        // const makeBtn = document.querySelector('.__make');
+        // // make 박스
+        // if(makeBtn.contains(evt.target)) {
+
+        // } else if(makeBox.contains(evt.target)) {
+        
+        // } else {  
+        //   this.makeBox_ch = false;
+        // }
+
+        // const searchBox = document.querySelector('.searchBox');
+        // const searchBtn = document.querySelector('.__search');
+        // // search 박스
+        // if(searchBtn.contains(evt.target)) {
+
+        // } else if(!searchBox.contains(evt.target)) {
+        //   this.searchBox_ch = false;
+        // }
+
+
+        // const noticeBox = document.querySelector('.noticeBox');
+        // const noticeBtn = document.querySelector('.__notice');
+        // // notice 박스
+        // if(noticeBtn.contains(evt.target)) {
+
+        // } else if(!noticeBox.contains(evt.target)) {
+        //   this.noticeBox_ch = false;
+        // }
+      })
     }
   },
   watch: {
+    dropBox() {
+
+    },
     displaySize(e) {
       e = window.innerWidth;
     },
@@ -402,7 +450,7 @@ export default {
         this.mobile_display = true;
         this.tablet_display = false;
       }
-      const user = await axios.post('http://localhost:8000/select', { name : this.name });
+      const user = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/select', { name : this.name });
       console.log(user)
       this.user_sample = user.data;
     } catch(e) {
@@ -643,6 +691,7 @@ export default {
 
 .header {
   .second__header {
+
     position: fixed;
     width: 335px;
     height: 100vh;
@@ -840,6 +889,7 @@ export default {
       // left: 0;
       transform: translateX(0%);
       transition: .5s;
+      // transition-delay: .5s;
       left: 74px;
       box-shadow: 4px 0 24px rgba(0,0,0,.15);
       width: 0;
@@ -945,7 +995,7 @@ export default {
     }
     .searchBox.searchBox_ch {
       width: 397px;
-      // left: 72px;
+      // left: 72px;f
       // transform: translateX(0%);
       transition: all ease .5s 0s;
       // transition: .5s;
@@ -1100,7 +1150,7 @@ export default {
   .makeBox {
     display: none;
     transition: .3s;
-    position: absolute;
+    position: fixed;
     z-index: 100;
     top: 50%;
     left: 50%;
@@ -1467,6 +1517,9 @@ export default {
         }
       }
       // search
+      .searchBox {
+        left: 0;
+      }
       .searchBox.searchBox_ch {
         border-radius: 0;
         padding: 0;
@@ -1504,6 +1557,9 @@ export default {
         }
       }
       // notice
+      .noticeBox {
+        left: 0;
+      }
       .noticeBox.noticeBox_ch {
         border-radius: 0;
         padding: 0;
@@ -1568,7 +1624,7 @@ export default {
       }
     }
     .makeBox {
-      max-width: calc(100% - 100px);
+      max-width: calc(100% - 30px);
       max-height: calc(100% - 500px);
       width: 100%;
       height: 100%;

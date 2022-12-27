@@ -23,7 +23,7 @@ export default {
         if(this.focusBtn === true) {
           this.singIn= false;
           const res = await axios({
-            url: 'http://localhost:8000/login',
+            url: import.meta.env.VITE_FULL_DB_URL + '/login',
             method: 'POST',
             data: {
               email: this.id,
