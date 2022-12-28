@@ -305,6 +305,14 @@ app.post('/user_name',(req, res) => {
 	})
 })
 
+// 디테일 게시물 조회
+app.post('/make_detail_select',(req, res) => {
+	const idx = req.body.idx;
+	console.log(idx)
+	db.query(`SELECT * FROM make WHERE idx = '${idx}'`, (err, row) => {
+		res.json(row)
+	})
+})
 
 // 게시물 조회
 app.get('/make_select',(req, res) => {

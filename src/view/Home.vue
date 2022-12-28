@@ -33,6 +33,19 @@ export default {
 
       upload_ch: false,
       board_setting_ch: false,
+
+      detail_ch: false,
+      commentWirte_ch: false,
+      comment_setting_ch: false,
+      comment_detail_close: false,
+      
+      // detail - 일인용
+      detail_idx: 0,
+      detail_img: "",
+      detail_img_cnt: 0,
+      detail_make_write: "",
+      detail_name: "",
+      detail_nickname: ""
     }
   },
   methods: {
@@ -81,6 +94,30 @@ export default {
     },
     board_save() {
 
+    },
+    async board_detail(idx) {
+      const res = await axios.post(import.meta.env.VITE_FULL_DB_URL + '/make_detail_select', { idx : idx });
+      console.log(res);
+      this.detail_idx = res.data[0].idx
+      this.detail_img = res.data[0].img;
+      this.detail_img_cnt = res.data[0].img_cnt;
+      this.detail_make_write = res.data[0].make_write;
+      this.detail_name = res.data[0].name;
+      this.detail_nickname = res.data[0].nickname;
+
+      this.detail_ch = true;
+    },
+    commentWirteBtn() {
+      this.commentWirte_ch = true;
+    },
+    comment_open() {
+      this.comment_setting_ch = true;
+    },
+    comment_close() {
+      this.comment_setting_ch = false;
+    },
+    detail_close() {
+      this.detail_ch = false;
     }
   },
   computed: {
@@ -111,6 +148,7 @@ export default {
       console.log(res);
       this.user_list = res.data;
       this.commentLength = res.data.commentLength.length;
+      this.comments = res.data.commentLength;
       console.log(this.commentLength)
 
       // 유저 전체 조회
@@ -202,7 +240,7 @@ export default {
               <!-- 이렇게 같은 item들을 flex로 할땐 동일하게 되지만 하나만 margin auto, 해당 자식만 flex를 또 걸어 하나만 따로 맨끝 이런식으로 지정해줄 수 있단 -->
               <div class="content__comu">
                 <div class="__icons __heart" @click="board_like()"><i class="fa-regular fa-heart"></i></div>
-                <div class="__icons __comment"><i class="fa-regular fa-comment"></i></div>
+                <div class="__icons __comment" @click="board_detail(user.idx)"><i class="fa-regular fa-comment"></i></div>
                 <div class="__icons __message" @click="msg_page()"><i class="fa-regular fa-paper-plane"></i></div>
                 <div class="__icons __save" @click="board_save()"><i class="fa-regular fa-bookmark"></i></div>
               </div>
@@ -218,10 +256,12 @@ export default {
               <!-- comment data -->
               <div class="comment__info">
                 <div class="comment__data" v-for="comment in user_list.comment" :key="comment" >
-                  <div class="info__title" v-if="user.idx === comment.make_id">{{ comment.user_nickname }} <span>{{ comment.comment }}</span></div>
-                  <div class="info__icon" v-if="user.idx === comment.make_id">
-                    <div class="__infoLike" :class="{ defaultLike : Number(user_id) !== comment.user_id}"><i class="fa-regular fa-heart"></i></div>
-                    <div class="__infoDelete" v-if="Number(user_id) === comment.user_id"><i class="fa-regular fa-trash-can"></i></div>
+                  <div class="__commentBox" v-if="user.idx === comment.make_id">
+                    <div class="info__title" v-if="user.idx === comment.make_id">{{ comment.user_nickname }} <span>{{ comment.comment }}</span></div>
+                    <div class="info__icon" v-if="user.idx === comment.make_id">
+                      <div class="__infoLike" :class="{ defaultLike : Number(user_id) !== comment.user_id}"><i class="fa-regular fa-heart"></i></div>
+                      <div class="__infoDelete" v-if="Number(user_id) === comment.user_id"><i class="fa-regular fa-trash-can"></i></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -234,19 +274,31 @@ export default {
                 <div class="__uploadBtn" @click="comment_btn(user.idx)" :class="{ upload_ch }">게시</div>
               </div>
             </div>
+            
             <!-- 상세보기 (반복문 안쪽이라 하더라돈 반복문 데이터를 넣지않는이상 반복문 개수만큼 만들어지진 않는다 -> 반복문안 데이터를 활용해야한다면 반복될 걱정없이 넣으면 된단) -->
             <!-- 첫부모 position(위치), 두번짼 플렉스로 자식요소들 정하는 요소단 -> 이렇게 최상단은 위치조정 두번짼 자식들 배치조정? 이렇게 순서대로 하면 좋단 -->
-            <div class="make__detail">
+            <div class="make__detail" :class="{ detail_ch }">
               <div class="make__body">
+                <!-- 한 요소에 display 두개라면 겹친단 -> 둘중 하나만 적용되니 새로운 요소만든다고 달라지는건 없으니 만들어서 display 요소만 넣어준단 -->
                 <div class="make__left">
+                  <div class="leftDisplay">
+                    <div class="left__userInfo">
+                      <div class="__myImg" @click="myPage(detail_name)"></div>
+                      <div class="__myData">
+                        <div class="__nickname">{{ detail_nickname }}</div>
+                        <div class="__name">{{ detail_name }}</div>
+                      </div>
+                      <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
+                    </div>
+                  </div>
                   <swiper class="swiper swiper-container" :slides-per-view="1" :space-between="20" :modules="modules" navigation  :pagination="{ clickable: true }">
-                    <div class="swiper-wrapper" v-if="user.img_cnt === 1">
+                    <div class="swiper-wrapper" v-if="detail_img_cnt === 1">
                       <swiper-slide>
-                        <img class="body__img" :src="user.img" />
+                        <img class="body__img" :src="detail_img" />
                       </swiper-slide>
                     </div>
                     <div class="swiper-wrapper" v-else>
-                      <swiper-slide v-for="img in user.img.split(',')" :key="img">
+                      <swiper-slide v-for="img in detail_img.split(',')" :key="img">
                         <img class="body__img" :src="img" />
                       </swiper-slide>
                     </div>
@@ -256,36 +308,50 @@ export default {
                   <div class="right__userInfo">
                     <div class="__myImg" @click="myPage(user.name)"></div>
                     <div class="__myData">
-                      <div class="__nickname">{{ user.nickname }}</div>
-                      <div class="__name">{{ user.name }}</div>
+                      <div class="__nickname">{{ detail_nickname }}</div>
+                      <div class="__name">{{ detail_name }}</div>
                     </div>
-                    <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
+                    <div class="__transform"><i @click="comment_open()" class="fa-solid fa-ellipsis"></i></div>
                   </div>
 
                   <div class="right__comment">
                     <div class="comment__info">
-                      <div class="comment__data" v-for="comment in user_list.comment" :key="comment" >
-                        <div class="__myImg" v-if="user.idx === comment.make_id"></div>
-                        <div class="info__title" v-if="user.idx === comment.make_id">{{ comment.user_nickname }} <span>{{ comment.comment }}</span></div>
-                        <div class="info__icon" v-if="user.idx === comment.make_id">
-                          <div class="__infoLike" :class="{ defaultLike : Number(user_id) !== comment.user_id}"><i class="fa-regular fa-heart"></i></div>
-                          <div class="__infoDelete" v-if="Number(user_id) === comment.user_id"><i class="fa-regular fa-trash-can"></i></div>
+                      <div class="comment__data" v-for="comment in user_list.commentLength" :key="comment" >
+                        <div class="__commentBox" v-if="detail_idx === comment.make_id">
+                          <div class="__myImg" v-if="detail_idx === comment.make_id"></div>
+                          <div class="info__title" v-if="detail_idx === comment.make_id">{{ comment.user_nickname }} <span>{{ comment.comment }}</span></div>
+                          <div class="info__icon" v-if="detail_idx === comment.make_id">
+                            <div class="__infoLike" :class="{ defaultLike : Number(user_id) !== comment.user_id}"><i class="fa-regular fa-heart"></i></div>
+                            <div class="__infoDelete" v-if="Number(user_id) === comment.user_id"><i class="fa-regular fa-trash-can"></i></div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div class="right__commentBox">
                     <div class="__icons __heart" @click="board_like()"><i class="fa-regular fa-heart"></i></div>
-                    <div class="__icons __comment"><i class="fa-regular fa-comment"></i></div>
+                    <div class="__icons __comment" @click="commentWirteBtn()"><i class="fa-regular fa-comment"></i></div>
                     <div class="__icons __message" @click="msg_page()"><i class="fa-regular fa-paper-plane"></i></div>
                     <div class="__icons __save" @click="board_save()"><i class="fa-regular fa-bookmark"></i></div>
                   </div>
-                  <div class="right__commentWrite">
+                  <div class="right__commentWrite" :class="{ commentWirte_ch }">
                     <div class="__icon"><i class="fa-regular fa-face-smile"></i></div>
                     <div class="__text"><input v-model="comment" placeholder="댓글 달기..." /></div>
-                    <div class="__uploadBtn" @click="comment_btn(user.idx)" :class="{ upload_ch }">게시</div>
+                    <div class="__uploadBtn" @click="comment_btn(detail_idx)" :class="{ upload_ch }">게시</div>
                   </div>
                 </div>
+              </div>
+
+              <!-- detail button -->
+              <div class="comment__setting" :class="{ comment_setting_ch }">
+                <div class="item">신고</div>
+                <div class="item">팔로우 취소</div>
+                <div class="item">즐겨찾기에 추가</div>
+                <div class="item">게시물로 이동</div>
+                <div class="item">공유 대상</div>
+                <div class="item">링크 복사</div>
+                <div class="item" @click="detail_close()">창닫기</div>
+                <div class="item" @click="comment_close()">취소</div>
               </div>
             </div>
           </div>
@@ -553,24 +619,26 @@ export default {
                 }
               }
               .comment__data {
-                margin-top: 5px;
-                display: flex;
-                .info__icon {
+                .__commentBox {
                   display: flex;
-                  margin-left: auto;
-                  .__infoLike {
-                    margin-right: 5px;
-                    cursor: pointer;
+                  padding-top: 5px;
+                  .info__icon {
+                    display: flex;
+                    margin-left: auto;
+                    .__infoLike {
+                      margin-right: 5px;
+                      cursor: pointer;
+                    }
+                    .__infoLike.defaultLike {
+                      margin-right: 0;
+                    }
+                    .__infoDelete {
+                      cursor: pointer;
+                    }
                   }
-                  .__infoLike.defaultLike {
-                    margin-right: 0;
+                  &:first-child {
+                    margin-top: 0;
                   }
-                  .__infoDelete {
-                    cursor: pointer;
-                  }
-                }
-                &:first-child {
-                  margin-top: 0;
                 }
               }
             }
@@ -683,7 +751,7 @@ export default {
           }
           // detail
           .make__detail {
-            // display: none;
+            display: none;
             transition: .2s;
             position: fixed;
             z-index: 100;
@@ -711,6 +779,41 @@ export default {
                 // 사진이 디스플레이 맞게 height widthg 줄어든단 ->부모 자식 100프로맞춘다 부모는 min걸면 그만큼까지 줄어드니깐 참곤
                 // min-height: 275px;
                 // height: 100%;
+                .leftDisplay {
+                  display: none;
+                  .left__userInfo {
+                    display: flex;
+                    align-items: center;
+                    padding: 15px;
+                    border-bottom: 1px solid #eee;
+                    .__myImg {
+                      background: #eee;
+                      width: 32px;
+                      height: 32px;
+                      border-radius: 50%;
+                      cursor: pointer;
+                    }
+                    .__myData {
+                      margin-left: 15px;
+                      .__nickname {
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: rgb(38, 38, 38);
+                      }
+                      .__name {
+                        margin-top: 5px;
+                        font-size: 14px;
+                        color: rgb(142, 142, 142);
+                      }
+                    }
+                    .__transform {
+                      margin-left: auto;
+                      i {
+                        cursor: pointer;
+                      }
+                    }
+                  }
+                }
                 .swiper {
                   height: auto;
                   .swiper-slide {
@@ -761,7 +864,7 @@ export default {
                 }
                 .right__comment {
                   overflow-y: scroll;
-                  height: 70%;
+                  height: 75%;
                   border-bottom: 1px solid #eee;
                   .comment__info {
                     // padding: 5px 13px 5px 13px;
@@ -775,41 +878,43 @@ export default {
                       }
                     }
                     .comment__data {
-                      margin-top: 5px;
-                      display: flex;
-                      align-items: center;
-                      .__myImg {
-                        background: #eee;
-                        width: 32px;
-                        height: 32px;
-                        border-radius: 50%;
-                        cursor: pointer;
-                        margin-right: 15px;
-                      }
-                      .info__icon {
+                      .__commentBox {
+                        padding-top: 5px;
                         display: flex;
-                        margin-left: auto;
-                        .__infoLike {
-                          margin-right: 5px;
+                        align-items: center;
+                        .__myImg {
+                          background: #eee;
+                          width: 32px;
+                          height: 32px;
+                          border-radius: 50%;
                           cursor: pointer;
+                          margin-right: 15px;
                         }
-                        .__infoLike.defaultLike {
-                          margin-right: 0;
+                        .info__icon {
+                          display: flex;
+                          margin-left: auto;
+                          .__infoLike {
+                            margin-right: 5px;
+                            cursor: pointer;
+                          }
+                          .__infoLike.defaultLike {
+                            margin-right: 0;
+                          }
+                          .__infoDelete {
+                            cursor: pointer;
+                          }
                         }
-                        .__infoDelete {
-                          cursor: pointer;
+                        &:first-child {
+                          margin-top: 0;
                         }
-                      }
-                      &:first-child {
-                        margin-top: 0;
                       }
                     }
                   }
                 }
                 .right__commentBox {
-                  padding: 18px 13px 13px 13px;
+                  padding: 13px;
                   display: flex;
-                  height: 10%;
+                  height: 9%;
                   // border-bottom: 1px solid #eee;
                   .__icons {
                     cursor: pointer;
@@ -832,19 +937,22 @@ export default {
                 .right__commentWrite {
                   // padding: 8px 16px;
                   // height: 100%;
-                  height: 5%;
-                  padding: 15px;
+                  // height: 5%;
+                  padding: 5px 15px 5px 15px;
                   border-top: 1px solid rgb(219, 219, 219);
                   display: flex;
                   align-items: center;
+                  // position을 걸면 box-sizing이 없으면 그만큼 삐져나온단
+                  box-sizing: border-box;
                   .__icon {
                     // i icon은 직접 i에 안넣고 부모요소에 넣어도 적용된단
                     font-size: 24px;
                   }
                   .__text {
                     margin-left: 10px;
+                    width: 80%;
                     input {
-                      width: 350px;
+                      width: 100%;
                       height: 30px;
                       border: none;
                       outline: none;
@@ -865,6 +973,65 @@ export default {
                 }
               }
             }
+            .comment__setting {
+              display: none;
+              position: fixed;
+              width: 400px;
+              top: 50%;
+              left:50%;
+              transform: translate(-50%, -50%);
+              z-index: 10;
+              background: #fff;
+              border-radius: 10px;
+              box-shadow: rgb(0 0 0 / 10%) 0px 4px 12px;
+              box-sizing: border-box;
+              .item {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 48px;
+                border-bottom: 1px solid #eee;
+                box-sizing: border-box;
+                color: #262626;
+                font-size: 14px;
+                cursor: pointer;
+                &:last-child {
+                  border-bottom: none;
+                  &:hover {
+                    border-radius: 0 0 10px 10px;
+                  }
+                }
+                &:first-child {
+                  border-top: none;
+                  &:hover {
+                    background: rgb(250, 250, 250);
+                    border-radius: 10px 10px 0 0;
+                  }
+                }
+                &:hover {
+                  background: rgb(250, 250, 250);
+                }
+              }
+            }
+            .comment__setting.comment_setting_ch {
+              display: block;
+              animation: fadeInUp 1s;
+              @keyframes fadeInUp {
+                0% {
+                  opacity: 0;
+                  // translate(x, y)
+                  transform: translate(-50%, -45%);
+            
+                }
+                100% {
+                  opacity: 1;
+                  transform: translate(-50%, -50%);
+                }
+              }
+            }
+          }
+          .make__detail.detail_ch {
+            display: block;
           }
         }
         .__check {
@@ -1033,6 +1200,18 @@ export default {
             .make__detail {
               width: 80vw;
               height: 70vh;
+              .make__body {
+                .make__right {
+                  .right__comment {
+                    height: 70%;
+                  }
+                  .right__commentWrite  {
+                    .__text {
+                      width: 70%;
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -1080,6 +1259,45 @@ export default {
               height: 60vh;
               .make__body {
                 display: block;
+                .make__left {
+                  width: 100%;
+                  .leftDisplay {
+                    display: block;
+                  }
+                  .swiper {
+                    .swiper-slide {
+                      .body__img {
+                        height: 300px;
+                      }
+                    }
+                  }
+                }
+                .make__right {
+                  width: 100%;
+                  height: auto;
+                  .right__userInfo {
+                    display: none;
+                  }
+                  .right__comment {
+                    display: none;
+                  }
+                  .right__commentWrite {
+                    display: none;
+                  }
+                  .right__commentWrite.commentWirte_ch {
+                    display: flex;
+                    position: absolute;
+                    width: 100%;
+                    bottom: 0;
+                    // 항상 부모요소에 따라서 자식의 100프로가 결정된단
+                    .__text {
+                      width: 80%;
+                      input {
+                        width: 100%;
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -1096,6 +1314,36 @@ export default {
     width: 100%;
     .menu {
       width: 100%;
+    }
+    margin: auto;
+  }
+}
+
+// mobile3 ->>
+@media screen and (max-width: 550px) {
+  .home {
+    width: 100%;
+    .menu {
+      width: 100%;
+      .section {
+        .left__list {
+          .__board {
+            .make__detail {
+              width: 80vw;
+              height: 60vh;
+              .make__body {
+                .make__right {
+                  .right__commentWrite.commentWirte_ch {
+                    .__text {
+                      width: 75%;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
     margin: auto;
   }
