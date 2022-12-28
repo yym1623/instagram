@@ -316,7 +316,7 @@ app.get('/make_select',(req, res) => {
 		// 프론트에서 slice로 할수도 있겠지만은 전체에서 구분해줘야할땐 쿼리에서 그룹으로하여 3개씩 가져온단
 		db.query(`SELECT * FROM ( 
 			SELECT *, RANK() OVER (PARTITION BY M.make_id ORDER BY M.idx DESC, M.idx DESC) AS RN  
-			FROM comment AS M) AS RANKING WHERE RANKING.RN <= 3`, (err, comment) => {
+			FROM comment AS M) AS RANKING WHERE RANKING.RN <= 2`, (err, comment) => {
 			if(err) console.error(err)
 			// 2. 각각 가져와선 가공해서 idx맞게 넣어줄라했는데 이거도 실패 -> 클라에 각각 보내줘서 idx가 맞는거끼리 나타나게 해준단
 			// 조회용으로 댓글 전체 가져오자

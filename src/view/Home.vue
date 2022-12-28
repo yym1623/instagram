@@ -110,7 +110,8 @@ export default {
       const res = await axios.get(import.meta.env.VITE_FULL_DB_URL + '/make_select');
       console.log(res);
       this.user_list = res.data;
-      this.commentLength = res.data.commentLength.length
+      this.commentLength = res.data.commentLength.length;
+      console.log(this.commentLength)
 
       // 유저 전체 조회
       // console.log에서도 없는값을 조회할려하면 오류걸리면서 그 아래 코드는 실행안되고 멈추는 현상이 발생한단
@@ -211,13 +212,17 @@ export default {
               <!-- comment length -->
               <div class="comment__length">
                 <div class="__length">
-                  <div class="info__title">댓글 ? 개 모두 보기</div>
+                  <div class="info__title">댓글 {{ commentLength }}개 모두 보기</div>
                 </div>
               </div>
               <!-- comment data -->
               <div class="comment__info">
-                <div class="comment__data"  v-for="comment in user_list.comment" :key="comment" >
+                <div class="comment__data" v-for="comment in user_list.comment" :key="comment" >
                   <div class="info__title" v-if="user.idx === comment.make_id">{{ comment.user_nickname }} <span>{{ comment.comment }}</span></div>
+                  <div class="info__icon" v-if="user.idx === comment.make_id">
+                    <div class="__infoLike" :class="{ defaultLike : Number(user_id) !== comment.user_id}"><i class="fa-regular fa-heart"></i></div>
+                    <div class="__infoDelete" v-if="Number(user_id) === comment.user_id"><i class="fa-regular fa-trash-can"></i></div>
+                  </div>
                 </div>
               </div>
               <div class="comment__date">
@@ -227,6 +232,60 @@ export default {
                 <div class="__icon"><i class="fa-regular fa-face-smile"></i></div>
                 <div class="__text"><input v-model="comment" placeholder="댓글 달기..." /></div>
                 <div class="__uploadBtn" @click="comment_btn(user.idx)" :class="{ upload_ch }">게시</div>
+              </div>
+            </div>
+            <!-- 상세보기 (반복문 안쪽이라 하더라돈 반복문 데이터를 넣지않는이상 반복문 개수만큼 만들어지진 않는다 -> 반복문안 데이터를 활용해야한다면 반복될 걱정없이 넣으면 된단) -->
+            <!-- 첫부모 position(위치), 두번짼 플렉스로 자식요소들 정하는 요소단 -> 이렇게 최상단은 위치조정 두번짼 자식들 배치조정? 이렇게 순서대로 하면 좋단 -->
+            <div class="make__detail">
+              <div class="make__body">
+                <div class="make__left">
+                  <swiper class="swiper swiper-container" :slides-per-view="1" :space-between="20" :modules="modules" navigation  :pagination="{ clickable: true }">
+                    <div class="swiper-wrapper" v-if="user.img_cnt === 1">
+                      <swiper-slide>
+                        <img class="body__img" :src="user.img" />
+                      </swiper-slide>
+                    </div>
+                    <div class="swiper-wrapper" v-else>
+                      <swiper-slide v-for="img in user.img.split(',')" :key="img">
+                        <img class="body__img" :src="img" />
+                      </swiper-slide>
+                    </div>
+                  </swiper>
+                </div>
+                <div class="make__right">
+                  <div class="right__userInfo">
+                    <div class="__myImg" @click="myPage(user.name)"></div>
+                    <div class="__myData">
+                      <div class="__nickname">{{ user.nickname }}</div>
+                      <div class="__name">{{ user.name }}</div>
+                    </div>
+                    <div class="__transform"><i class="fa-solid fa-ellipsis"></i></div>
+                  </div>
+
+                  <div class="right__comment">
+                    <div class="comment__info">
+                      <div class="comment__data" v-for="comment in user_list.comment" :key="comment" >
+                        <div class="__myImg" v-if="user.idx === comment.make_id"></div>
+                        <div class="info__title" v-if="user.idx === comment.make_id">{{ comment.user_nickname }} <span>{{ comment.comment }}</span></div>
+                        <div class="info__icon" v-if="user.idx === comment.make_id">
+                          <div class="__infoLike" :class="{ defaultLike : Number(user_id) !== comment.user_id}"><i class="fa-regular fa-heart"></i></div>
+                          <div class="__infoDelete" v-if="Number(user_id) === comment.user_id"><i class="fa-regular fa-trash-can"></i></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="right__commentBox">
+                    <div class="__icons __heart" @click="board_like()"><i class="fa-regular fa-heart"></i></div>
+                    <div class="__icons __comment"><i class="fa-regular fa-comment"></i></div>
+                    <div class="__icons __message" @click="msg_page()"><i class="fa-regular fa-paper-plane"></i></div>
+                    <div class="__icons __save" @click="board_save()"><i class="fa-regular fa-bookmark"></i></div>
+                  </div>
+                  <div class="right__commentWrite">
+                    <div class="__icon"><i class="fa-regular fa-face-smile"></i></div>
+                    <div class="__text"><input v-model="comment" placeholder="댓글 달기..." /></div>
+                    <div class="__uploadBtn" @click="comment_btn(user.idx)" :class="{ upload_ch }">게시</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -260,7 +319,7 @@ export default {
               <!-- 5개만 가져오기 -> 전체누르면 전체창에서 전체 나오게하긴 -->
               <div class="__item"  v-for="user in users_list.slice(0,5)" :key="user">
                 <!-- <img :src="user.profile" class="__myImg" @click="myPage(user.nickname, user.name)" /> -->
-                <div :src="user.profile" class="__myImg" @click="myPage(user.name)" ></div>
+                <div class="__myImg" @click="myPage(user.name)"></div>
                 <div class="__myData">
                   <div class="__nickname">{{ user.nickname }}</div>
                   <div class="__name">{{ user.name }}</div>
@@ -495,6 +554,21 @@ export default {
               }
               .comment__data {
                 margin-top: 5px;
+                display: flex;
+                .info__icon {
+                  display: flex;
+                  margin-left: auto;
+                  .__infoLike {
+                    margin-right: 5px;
+                    cursor: pointer;
+                  }
+                  .__infoLike.defaultLike {
+                    margin-right: 0;
+                  }
+                  .__infoDelete {
+                    cursor: pointer;
+                  }
+                }
                 &:first-child {
                   margin-top: 0;
                 }
@@ -538,9 +612,11 @@ export default {
                 opacity: .3;
                 // cursor: pointer;
                 margin-left: auto;
+                pointer-events: none;
               }
               .__uploadBtn.upload_ch {
                 opacity: 1;
+                pointer-events: auto;
                 cursor: pointer;
                 color: rgb(0, 149, 246);
               }
@@ -602,6 +678,191 @@ export default {
               100% {
                 opacity: 1;
                 transform: translate(-50%, -50%);
+              }
+            }
+          }
+          // detail
+          .make__detail {
+            // display: none;
+            transition: .2s;
+            position: fixed;
+            z-index: 100;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 90vh;
+            background: #fff;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            border-radius: 5px;
+            .make__body {
+              width: 100%;
+              // height: calc(100% - 42px);
+              height: 100%;
+              // padding: 20px;
+              box-sizing: border-box;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              .make__left {
+                width: 60%;
+                // max-height: 590px;
+                // height:100%;
+                // 사진이 디스플레이 맞게 height widthg 줄어든단 ->부모 자식 100프로맞춘다 부모는 min걸면 그만큼까지 줄어드니깐 참곤
+                // min-height: 275px;
+                // height: 100%;
+                .swiper {
+                  height: auto;
+                  .swiper-slide {
+                    // height : 100%하면 안늘어나고 auto하니깐 늘어난단 -> 차이 기억하기
+                    height: auto;
+                    .body__img {
+                      width: 100%;
+                      height: 100%;
+                    }
+                  }
+                }
+              }
+              .make__right {
+                width: 40%;
+                height: 100%;
+                border-left: 1px solid #eee;
+                .right__userInfo {
+                  display: flex;
+                  align-items: center;
+                  padding: 15px;
+                  border-bottom: 1px solid #eee;
+                  .__myImg {
+                    background: #eee;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                  }
+                  .__myData {
+                    margin-left: 15px;
+                    .__nickname {
+                      font-size: 14px;
+                      font-weight: bold;
+                      color: rgb(38, 38, 38);
+                    }
+                    .__name {
+                      margin-top: 5px;
+                      font-size: 14px;
+                      color: rgb(142, 142, 142);
+                    }
+                  }
+                  .__transform {
+                    margin-left: auto;
+                    i {
+                      cursor: pointer;
+                    }
+                  }
+                }
+                .right__comment {
+                  overflow-y: scroll;
+                  height: 70%;
+                  border-bottom: 1px solid #eee;
+                  .comment__info {
+                    // padding: 5px 13px 5px 13px;
+                    padding: 15px;
+                    .info__title {
+                      font-size: 14px;
+                      font-weight: bold;
+                      span {
+                        font-weight: 400;
+                        font-size: 13px;
+                      }
+                    }
+                    .comment__data {
+                      margin-top: 5px;
+                      display: flex;
+                      align-items: center;
+                      .__myImg {
+                        background: #eee;
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        margin-right: 15px;
+                      }
+                      .info__icon {
+                        display: flex;
+                        margin-left: auto;
+                        .__infoLike {
+                          margin-right: 5px;
+                          cursor: pointer;
+                        }
+                        .__infoLike.defaultLike {
+                          margin-right: 0;
+                        }
+                        .__infoDelete {
+                          cursor: pointer;
+                        }
+                      }
+                      &:first-child {
+                        margin-top: 0;
+                      }
+                    }
+                  }
+                }
+                .right__commentBox {
+                  padding: 18px 13px 13px 13px;
+                  display: flex;
+                  height: 10%;
+                  // border-bottom: 1px solid #eee;
+                  .__icons {
+                    cursor: pointer;
+                    i {
+                      font-size: 24px;
+                      // color, background-color론 icons안에 채울순없지만 font-weight : bold로 검은 백그라운드를 줄 수 있다
+                    }
+                    margin-left: 20px;
+                    &:first-child {
+                      margin-left: 0;
+                    }
+                    &:last-child {
+                      margin-left: auto;
+                    }
+                    &:hover {
+                      opacity: .5;
+                    }
+                  }
+                }
+                .right__commentWrite {
+                  // padding: 8px 16px;
+                  // height: 100%;
+                  height: 5%;
+                  padding: 15px;
+                  border-top: 1px solid rgb(219, 219, 219);
+                  display: flex;
+                  align-items: center;
+                  .__icon {
+                    // i icon은 직접 i에 안넣고 부모요소에 넣어도 적용된단
+                    font-size: 24px;
+                  }
+                  .__text {
+                    margin-left: 10px;
+                    input {
+                      width: 350px;
+                      height: 30px;
+                      border: none;
+                      outline: none;
+                    }
+                  }
+                  .__uploadBtn {
+                    opacity: .3;
+                    // cursor: pointer;
+                    margin-left: auto;
+                    pointer-events: none;
+                  }
+                  .__uploadBtn.upload_ch {
+                    opacity: 1;
+                    pointer-events: auto;
+                    cursor: pointer;
+                    color: rgb(0, 149, 246);
+                  }
+                }
               }
             }
           }
@@ -766,6 +1027,16 @@ export default {
     width: calc(100% - 72px);
     .menu {
       max-width: 830px;
+      .section {
+        .left__list {
+          .__board {
+            .make__detail {
+              width: 80vw;
+              height: 70vh;
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -799,6 +1070,19 @@ export default {
         }
         .board__setting {
           width: 260px;
+        }
+      }
+      .section {
+        .left__list {
+          .__board {
+            .make__detail {
+              width: 70vw;
+              height: 60vh;
+              .make__body {
+                display: block;
+              }
+            }
+          }
         }
       }
     }
