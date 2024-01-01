@@ -6,7 +6,7 @@
 <br />
 인스타그램 ([DEMO](https://y-instagram.netlify.app))
 
-![image](https://github.com/yym1623/instagram/assets/43946794/f0ca2800-2b04-40a4-a3bc-0f1e98e89b40)
+![image](https://github.com/yym1623/instagram/assets/43946794/185429b4-0c09-4384-89d3-48b27ed8b9ad)
 
 프로젝트 기간 : (2022.12 ~ 2023.02)
 
