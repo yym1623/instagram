@@ -23,6 +23,7 @@
 
 ## 개발도구
 * FrontEnd - Vue3
+* BackEnd - node(express)
 * server - Node
 * bundler - Vite
 * build - Aws
