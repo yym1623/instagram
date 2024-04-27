@@ -4,9 +4,9 @@
 ![vue](https://img.shields.io/badge/Vue3-4FC08D)
 ![Node.js](https://img.shields.io/badge/Node.js-339933)
 <br />
-인스타그램 ([DEMO]([https://y-instagram.netlify.app](https://github.com/yym1623/instagram/assets/43946794/15304330-3677-4ada-8b91-9b51d58ec33f)))
+인스타그램 ([DEMO]([https://y-instagram.netlify.app]()))
 
-![image]()
+![image](https://github.com/yym1623/instagram/assets/43946794/15304330-3677-4ada-8b91-9b51d58ec33f)
 
 프로젝트 기간 : (2022.12 ~ 2023.02)
 
