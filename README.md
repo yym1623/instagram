@@ -24,6 +24,7 @@
 ## 개발도구
 * FrontEnd - Vue3
 * BackEnd - node(express)
+* DataBase - MySQL
 * server - Aws
 
 ## 프로젝트 소개
