@@ -8,6 +8,8 @@
 
 ![image](https://github.com/yym1623/instagram/assets/43946794/15304330-3677-4ada-8b91-9b51d58ec33f)
 
+토이 프로젝트(FrontEnd - 윤영민)
+
 프로젝트 기간 : (2022.12 ~ 2023.02)
 
 
@@ -22,7 +24,7 @@
 
 
 ## 개발도구
-* FrontEnd - Vue3
+* FrontEnd - Vue3 (vite)
 * BackEnd - node(express)
 * DataBase - MySQL
 * server - AWS EC2
