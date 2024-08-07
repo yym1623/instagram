@@ -25,7 +25,7 @@
 * FrontEnd - Vue3
 * BackEnd - node(express)
 * DataBase - MySQL
-* server - Aws
+* server - AWS EC2
 
 ## 프로젝트 소개
 > #### 시나리오
